@@ -43,6 +43,14 @@ import { posts } from '../../data/posts';
         })
       }
     </div>
+
+    <div class="label-head bl__fiction-head">FICTION</div>
+    <div class="bl__soon" data-target="Fiction">
+      <div class="bl__soon-tag">COMING SOON</div>
+      <p class="bl__soon-copy">
+        Short fiction is in progress — stories away from the terminal. Check back soon.
+      </p>
+    </div>
   </section>
 </Base>
 
@@ -102,5 +110,27 @@ import { posts } from '../../data/posts';
     font-size: 12px;
     color: var(--accent);
     letter-spacing: .06em;
+  }
+
+  .bl__fiction-head { margin-top: 56px; }
+  .bl__soon {
+    border: 1px dashed var(--line);
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .bl__soon-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .14em;
+    color: var(--accent);
+  }
+  .bl__soon-copy {
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: 620px;
   }
 </style>

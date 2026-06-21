@@ -16,7 +16,7 @@ const {
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/resume', label: 'Résumé' },
-  { href: '/blog', label: 'Blog' },
+  { href: '/blog', label: 'Writing' },
   { href: '/github', label: 'GitHub' },
   { href: '/now', label: 'Now' },
 ];
@@ -210,7 +210,8 @@ const isActive = (href: string) =>
           if (raf) { cancelAnimationFrame(raf); raf = 0; }
         }
         function sync() {
-          on = fine.matches && !noMotion.matches;
+          var onResume = location.pathname.replace(/\/+$/, '') === '/resume';
+          on = fine.matches && !noMotion.matches && !onResume;
           if (on) enable(); else disable();
         }
 

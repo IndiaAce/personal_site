@@ -3,8 +3,8 @@ import Base from '../layouts/Base.astro';
 import Marquee from '../components/Marquee.astro';
 
 const navTiles = [
-  { num: '01', label: 'Writing', href: '/blog' },
-  { num: '02', label: 'Résumé', href: '/resume' },
+  { num: '01', label: 'Résumé', href: '/resume' },
+  { num: '02', label: 'Writing', href: '/blog' },
   { num: '03', label: 'GitHub', href: '/github' },
   { num: '04', label: 'Now', href: '/now' },
 ];
@@ -14,10 +14,6 @@ const marquee = ['M.Sc AI/ML', 'Threat Detection', 'B1 Français', 'Machine Lear
 
 <Base>
   <section class="home wrap">
-    <div class="home__status">
-      <span class="home__dot"></span>AVAILABLE FOR THE INTERESTING
-    </div>
-
     <h1 class="home__name">Luke<br />Wescott<span class="accent">.</span></h1>
 
     <p class="home__lede">
@@ -45,25 +41,6 @@ const marquee = ['M.Sc AI/ML', 'Threat Detection', 'B1 Français', 'Machine Lear
   .home {
     padding: 7vh 0 9vh;
     animation: rise .5s ease both;
-  }
-
-  .home__status {
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    letter-spacing: .2em;
-    color: var(--ink-soft);
-    margin-bottom: 26px;
-  }
-  .home__dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #28c840;
-    box-shadow: 0 0 10px #28c840;
-    animation: rtPulse 2.2s ease-in-out infinite;
   }
 
   .home__name {

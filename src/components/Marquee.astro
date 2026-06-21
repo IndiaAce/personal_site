@@ -3,18 +3,23 @@ interface Props {
   items: string[];
 }
 const { items } = Astro.props;
-// duplicate so the -50% translate loops seamlessly
-const loop = [...items, ...items];
+// Two identical copies; the track translates exactly -50%, so the second copy
+// lands precisely where the first began — a seamless, infinite loop.
+const copies = [0, 1];
 ---
 
 <div class="marquee">
-  <div class="marquee__track">
+  <div class="marquee__track" aria-hidden="false">
     {
-      loop.map((item, i) => (
-        <>
-          <span>{item}</span>
-          {i < loop.length - 1 && <>✦</>}
-        </>
+      copies.map(() => (
+        <div class="marquee__group">
+          {items.map((item) => (
+            <>
+              <span>{item}</span>
+              <span class="marquee__sep">✦</span>
+            </>
+          ))}
+        </div>
       ))
     }
   </div>

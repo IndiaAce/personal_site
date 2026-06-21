@@ -1,18 +1,16 @@
----
-const year = new Date().getFullYear();
----
-
 <footer class="ftr">
-  <div class="ftr__row">
+  <div class="ftr__col">
     <span class="ftr__brand">LUKE WESCOTT</span>
-    <span>THREAT DETECTION ENGINEER</span>
-    <span>EST. SUBLIME SECURITY</span>
+    <span>MSc in AI/ML</span>
   </div>
-  <div class="ftr__row ftr__row--sub">
-    <span>© {year}</span>
+  <div class="ftr__col">
+    <span>THREAT DETECTION ENGINEER</span>
     <a href="https://github.com/IndiaAce" target="_blank" rel="noopener noreferrer"
       >github.com/IndiaAce</a
     >
+  </div>
+  <div class="ftr__col">
+    <span>EST. SUBLIME SECURITY</span>
     <span>EN · FR (B1)</span>
   </div>
 </footer>
@@ -29,16 +27,29 @@ const year = new Date().getFullYear();
     letter-spacing: .14em;
     text-transform: uppercase;
     color: var(--ink-soft);
-  }
-  .ftr__row {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
-    gap: 16px;
-    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 24px;
+  }
+  /* each section keeps its left / middle / right anchor, but its two lines
+     are centered relative to each other (shorter line under the longer one) */
+  .ftr__col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
   }
   .ftr__brand { color: var(--ink); font-weight: 700; }
-  .ftr__row--sub { margin-top: 12px; opacity: .8; }
-  .ftr__row--sub a { color: var(--accent); text-decoration: none; }
-  .ftr__row--sub a:hover { text-decoration: underline; }
+  .ftr__col a { color: var(--accent); text-decoration: none; }
+  .ftr__col a:hover { text-decoration: underline; }
+
+  @media (max-width: 560px) {
+    .ftr {
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+  }
 </style>

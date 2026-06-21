@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import { getContributionSeries, type ContribData } from '../lib/github';
 
 // ============================================================
 // Real @IndiaAce data, fetched at BUILD time (no token needed):
@@ -98,6 +99,16 @@ try {
   ];
 }
 
+// Per-repo daily commit lines (needs GITHUB_TOKEN; null → heatmap fallback).
+let chart: ContribData | null = null;
+try {
+  chart = await getContributionSeries();
+} catch (err) {
+  console.warn('[github] line-graph fetch failed, using heatmap:', err);
+}
+// When we have token-backed data, use its (private-inclusive) contribution total.
+if (chart) total = chart.total;
+
 const fmt = (n: number) => (n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n));
 
 const stats = [
@@ -113,7 +124,7 @@ const legend = [0, 1, 2, 3, 4];
   <section class="gh wrap">
     <div class="gh__head">
       <div>
-        <div class="kicker">@INDIAACE</div>
+        <div class="kicker">INDIAACE</div>
         <h1 class="gh__title">A year in commits</h1>
       </div>
       <div class="gh__stats">
@@ -128,31 +139,55 @@ const legend = [0, 1, 2, 3, 4];
       </div>
     </div>
 
-    <div class="gh__board">
-      <div class="gh__grid">
-        {
-          weeks.map((week) => (
-            <div class="gh__col">
-              {week.map((day) =>
-                day ? (
-                  <div
-                    class={`gh__cell heat-${day.level}`}
-                    title={`${day.count} contributions${day.date ? ' · ' + day.date : ''}`}
-                  />
-                ) : (
-                  <div class="gh__cell gh__cell--empty" />
-                )
-              )}
+    {
+      chart ? (
+        <div class="gh__board gh__board--chart">
+          <div class="gh__chart-bar">
+            <div class="gh__chart-cap">COMMITS PER DAY · BY REPO</div>
+            <div class="gh__ranges" id="gh-ranges">
+              <button class="gh__range" data-days="30">1M</button>
+              <button class="gh__range" data-days="91">3M</button>
+              <button class="gh__range" data-days="182">6M</button>
+              <button class="gh__range gh__range--on" data-days="365">1Y</button>
             </div>
-          ))
-        }
-      </div>
-      <div class="gh__legend">
-        Less
-        {legend.map((l) => <div class={`gh__legend-cell heat-${l}`} />)}
-        More
-      </div>
-    </div>
+          </div>
+          <div class="gh__chart" id="gh-chart" />
+          <div class="gh__chart-legend" id="gh-legend">
+            {chart.series.map((s) => (
+              <button class="gh__lg" data-name={s.name} aria-pressed="true">
+                <span class="gh__lg-swatch" style={`background:${s.color}`} />
+                {s.name}
+              </button>
+            ))}
+          </div>
+          <script type="application/json" id="gh-data" set:html={JSON.stringify({ from: chart.from, to: chart.to, series: chart.series })} />
+        </div>
+      ) : (
+        <div class="gh__board">
+          <div class="gh__grid">
+            {weeks.map((week) => (
+              <div class="gh__col">
+                {week.map((day) =>
+                  day ? (
+                    <div
+                      class={`gh__cell heat-${day.level}`}
+                      title={`${day.count} contributions${day.date ? ' · ' + day.date : ''}`}
+                    />
+                  ) : (
+                    <div class="gh__cell gh__cell--empty" />
+                  )
+                )}
+              </div>
+            ))}
+          </div>
+          <div class="gh__legend">
+            Less
+            {legend.map((l) => <div class={`gh__legend-cell heat-${l}`} />)}
+            More
+          </div>
+        </div>
+      )
+    }
 
     <div class="gh__repos">
       {
@@ -175,6 +210,148 @@ const legend = [0, 1, 2, 3, 4];
       View full profile on GitHub →
     </a>
   </section>
+
+  <script is:inline>
+    (function () {
+      var dataEl = document.getElementById('gh-data');
+      var host = document.getElementById('gh-chart');
+      if (!dataEl || !host) return;
+
+      var DATA = JSON.parse(dataEl.textContent);
+      var SVGNS = 'http://www.w3.org/2000/svg';
+      var rangeDays = 365;
+      var disabled = {}; // series name -> true when toggled off
+
+      var css = getComputedStyle(document.documentElement);
+      var LINE = (css.getPropertyValue('--line') || '#888').trim();
+      var SOFT = (css.getPropertyValue('--ink-soft') || '#888').trim();
+
+      function key(d) { return d.toISOString().slice(0, 10); }
+      function addDays(d, n) { var x = new Date(d); x.setUTCDate(x.getUTCDate() + n); return x; }
+
+      function el(name, attrs) {
+        var n = document.createElementNS(SVGNS, name);
+        for (var k in attrs) n.setAttribute(k, attrs[k]);
+        return n;
+      }
+
+      function draw() {
+        var W = host.clientWidth || 900;
+        var H = 320;
+        var padL = 40, padR = 14, padT = 14, padB = 26;
+        var plotW = W - padL - padR;
+        var plotH = H - padT - padB;
+
+        var end = new Date(DATA.to + 'T00:00:00Z');
+        var start = addDays(end, -(rangeDays - 1));
+
+        // date axis
+        var days = [];
+        for (var i = 0; i < rangeDays; i++) days.push(addDays(start, i));
+
+        var active = DATA.series.filter(function (s) { return !disabled[s.name]; });
+
+        // max y across active series in range
+        var maxY = 1;
+        active.forEach(function (s) {
+          for (var i = 0; i < days.length; i++) {
+            var v = s.daily[key(days[i])] || 0;
+            if (v > maxY) maxY = v;
+          }
+        });
+
+        var xFor = function (i) { return padL + (rangeDays === 1 ? 0 : (i / (rangeDays - 1)) * plotW); };
+        var yFor = function (v) { return padT + plotH - (v / maxY) * plotH; };
+
+        var svg = el('svg', {
+          viewBox: '0 0 ' + W + ' ' + H,
+          width: '100%',
+          height: H,
+          preserveAspectRatio: 'none',
+          role: 'img',
+        });
+
+        // horizontal gridlines + y labels
+        var ticks = 4;
+        for (var t = 0; t <= ticks; t++) {
+          var val = Math.round((maxY * t) / ticks);
+          var y = yFor(val);
+          svg.appendChild(el('line', { x1: padL, y1: y, x2: W - padR, y2: y, stroke: LINE, 'stroke-width': 1, opacity: t === 0 ? 0.6 : 0.25 }));
+          var lbl = el('text', { x: padL - 8, y: y + 3, 'text-anchor': 'end', fill: SOFT, 'font-size': 10, 'font-family': 'monospace' });
+          lbl.textContent = String(val);
+          svg.appendChild(lbl);
+        }
+
+        // month tick labels on x axis
+        var lastMonth = -1;
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        for (var i = 0; i < days.length; i++) {
+          var m = days[i].getUTCMonth();
+          if (m !== lastMonth) {
+            lastMonth = m;
+            var x = xFor(i);
+            if (x < W - padR - 14) {
+              var tl = el('text', { x: x, y: H - 8, 'text-anchor': 'middle', fill: SOFT, 'font-size': 10, 'font-family': 'monospace' });
+              tl.textContent = months[m];
+              svg.appendChild(tl);
+            }
+          }
+        }
+
+        // one polyline per active series
+        active.forEach(function (s) {
+          var pts = [];
+          for (var i = 0; i < days.length; i++) {
+            var v = s.daily[key(days[i])] || 0;
+            pts.push(xFor(i).toFixed(1) + ',' + yFor(v).toFixed(1));
+          }
+          svg.appendChild(el('polyline', {
+            points: pts.join(' '),
+            fill: 'none',
+            stroke: s.color,
+            'stroke-width': 1.6,
+            'stroke-linejoin': 'round',
+            'stroke-linecap': 'round',
+            opacity: 0.95,
+          }));
+        });
+
+        host.innerHTML = '';
+        host.appendChild(svg);
+      }
+
+      // range buttons
+      var ranges = document.getElementById('gh-ranges');
+      if (ranges) {
+        ranges.addEventListener('click', function (e) {
+          var b = e.target.closest('.gh__range');
+          if (!b) return;
+          rangeDays = parseInt(b.getAttribute('data-days'), 10);
+          ranges.querySelectorAll('.gh__range').forEach(function (x) { x.classList.remove('gh__range--on'); });
+          b.classList.add('gh__range--on');
+          draw();
+        });
+      }
+
+      // legend toggles
+      var legend = document.getElementById('gh-legend');
+      if (legend) {
+        legend.addEventListener('click', function (e) {
+          var b = e.target.closest('.gh__lg');
+          if (!b) return;
+          var name = b.getAttribute('data-name');
+          disabled[name] = !disabled[name];
+          b.classList.toggle('gh__lg--off', !!disabled[name]);
+          b.setAttribute('aria-pressed', disabled[name] ? 'false' : 'true');
+          draw();
+        });
+      }
+
+      var rid;
+      window.addEventListener('resize', function () { clearTimeout(rid); rid = setTimeout(draw, 120); });
+      draw();
+    })();
+  </script>
 </Base>
 
 <style>
@@ -204,6 +381,66 @@ const legend = [0, 1, 2, 3, 4];
     background: var(--bg-elev);
     overflow-x: auto;
   }
+  .gh__board--chart { overflow-x: visible; }
+
+  .gh__chart-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .gh__chart-cap {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    color: var(--ink-soft);
+  }
+  .gh__ranges { display: flex; gap: 6px; }
+  .gh__range {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .06em;
+    color: var(--ink-soft);
+    background: transparent;
+    border: 1px solid var(--line);
+    padding: 5px 11px;
+    cursor: pointer;
+    transition: color .15s, border-color .15s, background .15s;
+  }
+  .gh__range:hover { color: var(--ink); }
+  .gh__range--on {
+    color: var(--bg);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .gh__chart { width: 100%; min-height: 320px; }
+  .gh__chart svg { display: block; }
+
+  .gh__chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-top: 18px;
+  }
+  .gh__lg {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    padding: 2px 0;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .gh__lg-swatch { width: 11px; height: 11px; border-radius: 2px; flex: none; }
+  .gh__lg--off { opacity: .32; text-decoration: line-through; }
+
   .gh__grid { display: flex; gap: 3px; min-width: 720px; }
   .gh__col { display: flex; flex-direction: column; gap: 3px; }
   .gh__cell { width: 13px; height: 13px; border-radius: 3px; }

@@ -4,7 +4,7 @@ import Base from '../layouts/Base.astro';
 const meta = [
   { k: 'LOCATION', v: 'Burlington, VT' },
   { k: 'LANGUAGES', v: 'EN · FR (B1)' },
-  { k: 'GITHUB', v: '@IndiaAce', href: 'https://github.com/IndiaAce' },
+  { k: 'GITHUB', v: 'IndiaAce', href: 'https://github.com/IndiaAce' },
   { k: 'LINKEDIN', v: 'in/luke-wescott', href: 'https://www.linkedin.com/in/luke-wescott-ba027a1ab/' },
   { k: 'EMAIL', v: 'lukewescott808@gmail.com', href: 'mailto:lukewescott808@gmail.com' },
 ];
@@ -147,7 +147,14 @@ const work = [
     <div class="rs__grid">
       <aside class="rs__side">
         <div class="rs__photo" data-target="Portrait">
-          <img src="/assets/luke.jpg" alt="Luke Wescott" />
+          <img
+            src="/assets/luke.jpg"
+            alt="Luke Wescott"
+            width="1077"
+            height="709"
+            loading="eager"
+            decoding="async"
+          />
           <div class="rs__photo-tint"></div>
         </div>
         <div class="rs__meta">
@@ -301,14 +308,25 @@ const work = [
     align-items: start;
   }
   .rs__side { position: sticky; top: 90px; }
-  .rs__photo { position: relative; overflow: hidden; border: var(--border); }
-  .rs__photo img { width: 100%; display: block; filter: grayscale(1) contrast(1.04); }
+  .rs__photo {
+    position: relative;
+    overflow: hidden;
+    border: var(--border);
+    aspect-ratio: 1077 / 709;
+  }
+  .rs__photo img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.04);
+  }
   .rs__photo-tint {
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, transparent 55%, var(--accent));
+    background: linear-gradient(180deg, transparent 78%, var(--accent));
     mix-blend-mode: multiply;
-    opacity: .32;
+    opacity: .2;
   }
   .rs__meta { margin-top: 22px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); }
   .rs__meta-row {
