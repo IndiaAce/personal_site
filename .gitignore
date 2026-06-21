@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Node / Astro
+node_modules/
+.astro/
+npm-debug.log*

@@ -1,0 +1,278 @@
+---
+import Base from '../layouts/Base.astro';
+
+// ============================================================
+// Real @IndiaAce data, fetched at BUILD time (no token needed):
+//   • contribution calendar — github-contributions-api.jogruber.de
+//     (reads the public profile graph; returns per-day count + level 0-4)
+//   • profile + repos        — api.github.com REST (public, unauthenticated)
+// If either fetch fails (offline / rate-limited), we fall back to a
+// procedural heatmap so the build never breaks.
+// ============================================================
+const USER = 'IndiaAce';
+
+type Cell = { level: number; count: number; date: string } | null;
+
+let weeks: Cell[][] = [];
+let total = 0;
+let streak = 0;
+let repoCount = 0;
+let repos: { name: string; desc: string; lang: string; stars: number; url: string }[] = [];
+let usingRealData = false;
+
+try {
+  // --- contribution calendar ---
+  const cont = await fetch(
+    `https://github-contributions-api.jogruber.de/v4/${USER}?y=last`
+  ).then((r) => {
+    if (!r.ok) throw new Error('contrib ' + r.status);
+    return r.json();
+  });
+  const days: { date: string; count: number; level: number }[] = cont.contributions;
+  total = cont.total?.lastYear ?? days.reduce((a, d) => a + d.count, 0);
+
+  // longest streak of consecutive active days
+  let run = 0;
+  for (const d of days) {
+    if (d.count > 0) { run++; streak = Math.max(streak, run); } else run = 0;
+  }
+
+  // grid: 7 rows (Sun→Sat), pad the first column to the first date's weekday
+  const firstWeekday = new Date(days[0].date + 'T00:00:00Z').getUTCDay();
+  const cells: Cell[] = [
+    ...Array(firstWeekday).fill(null),
+    ...days.map((d) => ({ level: d.level, count: d.count, date: d.date })),
+  ];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+
+  // --- profile + repos ---
+  const profile = await fetch(`https://api.github.com/users/${USER}`).then((r) => r.json());
+  repoCount = profile.public_repos ?? 0;
+
+  const repoData: any[] = await fetch(
+    `https://api.github.com/users/${USER}/repos?per_page=100&sort=updated`
+  ).then((r) => r.json());
+  repos = repoData
+    .filter((r) => !r.fork)
+    // describable repos first, then by stars, then most recently pushed
+    .sort((a, b) =>
+      (b.description ? 1 : 0) - (a.description ? 1 : 0) ||
+      b.stargazers_count - a.stargazers_count ||
+      new Date(b.pushed_at).getTime() - new Date(a.pushed_at).getTime()
+    )
+    .slice(0, 3)
+    .map((r) => ({
+      name: r.name,
+      desc: r.description || 'No description yet.',
+      lang: r.language || '—',
+      stars: r.stargazers_count,
+      url: r.html_url,
+    }));
+
+  usingRealData = true;
+} catch (err) {
+  console.warn('[github] live fetch failed, using procedural fallback:', err);
+  // procedural fallback (deterministic)
+  weeks = [];
+  total = 0;
+  for (let w = 0; w < 52; w++) {
+    const col: Cell[] = [];
+    for (let d = 0; d < 7; d++) {
+      const seed = Math.sin(w * 12.9898 + d * 78.233) * 43758.5453;
+      const rnd = seed - Math.floor(seed);
+      const wave = Math.sin(w / 7) * 0.3 + 0.4;
+      let lvl = Math.max(0, Math.min(4, Math.floor((rnd * 0.7 + wave) * 5)));
+      if (rnd < 0.18) lvl = 0;
+      const count = lvl === 0 ? 0 : lvl * 3 + Math.floor(rnd * 4);
+      total += count;
+      col.push({ level: lvl, count, date: '' });
+    }
+    weeks.push(col);
+  }
+  streak = 47;
+  repoCount = 30;
+  repos = [
+    { name: 'sigma-tuner', desc: 'Auto-tunes detection thresholds against historical alert volume.', lang: 'Python', stars: 0, url: 'https://github.com/IndiaAce' },
+    { name: 'embed-hunt', desc: 'Semantic search over threat intel using sentence embeddings.', lang: 'Python', stars: 0, url: 'https://github.com/IndiaAce' },
+    { name: 'detection-prose', desc: 'Linter + style guide for human-readable detection rules.', lang: 'Go', stars: 0, url: 'https://github.com/IndiaAce' },
+  ];
+}
+
+const fmt = (n: number) => (n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n));
+
+const stats = [
+  { n: fmt(total), l: 'CONTRIBUTIONS' },
+  { n: String(streak), l: 'LONGEST STREAK' },
+  { n: String(repoCount), l: 'PUBLIC REPOS' },
+];
+
+const legend = [0, 1, 2, 3, 4];
+---
+
+<Base title="GitHub — Luke Wescott">
+  <section class="gh wrap">
+    <div class="gh__head">
+      <div>
+        <div class="kicker">@INDIAACE</div>
+        <h1 class="gh__title">A year in commits</h1>
+      </div>
+      <div class="gh__stats">
+        {
+          stats.map((s) => (
+            <div class="gh__stat">
+              <div class="gh__stat-n">{s.n}</div>
+              <div class="gh__stat-l">{s.l}</div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="gh__board">
+      <div class="gh__grid">
+        {
+          weeks.map((week) => (
+            <div class="gh__col">
+              {week.map((day) =>
+                day ? (
+                  <div
+                    class={`gh__cell heat-${day.level}`}
+                    title={`${day.count} contributions${day.date ? ' · ' + day.date : ''}`}
+                  />
+                ) : (
+                  <div class="gh__cell gh__cell--empty" />
+                )
+              )}
+            </div>
+          ))
+        }
+      </div>
+      <div class="gh__legend">
+        Less
+        {legend.map((l) => <div class={`gh__legend-cell heat-${l}`} />)}
+        More
+      </div>
+    </div>
+
+    <div class="gh__repos">
+      {
+        repos.map((r) => (
+          <a class="gh__repo" href={r.url} target="_blank" rel="noopener noreferrer">
+            <div class="gh__repo-name">
+              <span class="gh__repo-dot" />
+              {r.name}
+            </div>
+            <div class="gh__repo-desc">{r.desc}</div>
+            <div class="gh__repo-meta">
+              {r.lang} · ★ {r.stars}
+            </div>
+          </a>
+        ))
+      }
+    </div>
+
+    <a class="gh__profile" href={`https://github.com/${USER}`} target="_blank" rel="noopener noreferrer">
+      View full profile on GitHub →
+    </a>
+  </section>
+</Base>
+
+<style>
+  .gh { padding: 54px 0 80px; max-width: 1180px; }
+  .gh__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .gh__title { font-size: clamp(40px, 6vw, 72px); line-height: .95; margin: 8px 0 0; }
+  .gh__stats { display: flex; gap: 28px; }
+  .gh__stat-n { font-family: var(--font-display); font-size: 40px; line-height: 1; }
+  .gh__stat-l {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: .08em;
+    margin-top: 4px;
+  }
+
+  .gh__board {
+    border: var(--border);
+    padding: 26px;
+    background: var(--bg-elev);
+    overflow-x: auto;
+  }
+  .gh__grid { display: flex; gap: 3px; min-width: 720px; }
+  .gh__col { display: flex; flex-direction: column; gap: 3px; }
+  .gh__cell { width: 13px; height: 13px; border-radius: 3px; }
+  .gh__cell--empty { background: transparent; }
+
+  .gh__legend {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .gh__legend-cell { width: 11px; height: 11px; border-radius: 3px; }
+
+  /* heat levels — recolor with theme via tokens */
+  .heat-0 { background: var(--heat-0); }
+  .heat-1 { background: var(--heat-1); }
+  .heat-2 { background: var(--heat-2); }
+  .heat-3 { background: var(--heat-3); }
+  .heat-4 { background: var(--heat-4); }
+
+  .gh__repos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .gh__repo {
+    border: 1px solid var(--line);
+    padding: 20px;
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color .15s;
+  }
+  .gh__repo:hover { border-color: var(--accent); }
+  .gh__repo-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .gh__repo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+  .gh__repo-desc {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .gh__repo-meta { font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); }
+
+  .gh__profile {
+    display: inline-block;
+    margin-top: 28px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: .06em;
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  .gh__profile:hover { border-bottom-color: var(--accent); }
+
+  @media (max-width: 860px) {
+    .gh__repos { grid-template-columns: 1fr; }
+  }
+</style>

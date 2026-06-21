@@ -1,0 +1,184 @@
+/* ============================================================
+   Luke Wescott — Personal Site
+   Brutalist visual language · Signal palette · light/dark
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Hanken+Grotesk:wght@300..800&family=Space+Mono:wght@400;700&display=swap');
+
+/* ---- Signal palette tokens ---- */
+:root {
+  --bg: #e6e6e0;
+  --bg-elev: #f3f3ee;
+  --ink: #101210;
+  --ink-soft: #61645c;
+  --line: #ccccc3;
+  --accent: #2722e0;
+  --accent-2: #7d9a16;
+  --glass: rgba(255, 255, 255, .5);
+  --glass-line: rgba(255, 255, 255, .75);
+
+  /* contribution heatmap (light) */
+  --heat-0: #d7d7e8;
+  --heat-1: #b3b4f0;
+  --heat-2: #8486f2;
+  --heat-3: #4f51e6;
+  --heat-4: #2722c0;
+
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'Hanken Grotesk', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+
+  --border: 2px solid var(--ink);
+}
+
+:root[data-theme='dark'] {
+  --bg: #0c0d11;
+  --bg-elev: #15171d;
+  --ink: #eef0ee;
+  --ink-soft: #888b94;
+  --line: #23262f;
+  --accent: #5468ff;
+  --accent-2: #c8f135;
+  --glass: rgba(255, 255, 255, .05);
+  --glass-line: rgba(255, 255, 255, .12);
+
+  --heat-0: #181b25;
+  --heat-1: #2a2f5c;
+  --heat-2: #3c44a6;
+  --heat-3: #5468ff;
+  --heat-4: #9aa6ff;
+}
+
+/* ---- reset / base ---- */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+html {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+body { min-height: 100vh; background: var(--bg); }
+
+::selection { background: var(--accent); color: var(--bg); }
+
+a { color: inherit; }
+
+img { max-width: 100%; display: block; }
+
+/* ---- keyframes (from prototype) ---- */
+@keyframes floaty   { 0%,100% { transform: translateY(0); }  50% { transform: translateY(-14px); } }
+@keyframes glowpulse{ 0%,100% { opacity: .55; transform: scale(1); } 50% { opacity: .85; transform: scale(1.06); } }
+@keyframes spin     { to { transform: rotate(360deg); } }
+@keyframes marq     { to { transform: translateX(-50%); } }
+@keyframes rise     { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ---- layout shell ---- */
+.wrap { max-width: 1280px; margin: 0 auto; padding: 0 6vw; }
+.section { padding: 64px 0; }
+
+/* ---- brutalist type helpers ---- */
+.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .3em; color: var(--accent); }
+
+h1, h2, h3 { font-family: var(--font-display); font-weight: 800; letter-spacing: -.015em; }
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(48px, 8.5vw, 128px);
+  line-height: .88;
+  letter-spacing: -.02em;
+  margin: 0;
+}
+.accent { color: var(--accent); }
+
+/* heavy rule used as section divider */
+.rule { border: 0; border-top: var(--border); margin: 0; }
+
+/* ---- marquee ---- */
+.marquee {
+  overflow: hidden;
+  border-top: var(--border);
+  border-bottom: var(--border);
+  padding: 14px 0;
+  white-space: nowrap;
+}
+.marquee__track {
+  display: inline-block;
+  animation: marq 22s linear infinite;
+  font-family: var(--font-display);
+  font-size: 30px;
+  color: var(--ink);
+}
+.marquee__track span { margin: 0 28px; }
+
+/* ---- nav tiles (invert on hover) ---- */
+.tiles { display: flex; border-bottom: var(--border); }
+.tile {
+  flex: 1;
+  padding: 22px 18px;
+  border-right: var(--border);
+  text-decoration: none;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: background .15s, color .15s;
+}
+.tile:last-child { border-right: 0; }
+.tile:hover { background: var(--accent); color: var(--bg); }
+.tile__num { font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; opacity: .6; }
+.tile__label { font-size: 21px; font-weight: 500; }
+
+/* ---- pills (skills / tags) ---- */
+.pill {
+  padding: 6px 13px;
+  border: 1px solid var(--line);
+  border-radius: 100px;
+  font-size: 13px;
+  color: var(--ink);
+  font-family: var(--font-mono);
+}
+.pill--square { border-radius: 4px; background: var(--bg-elev); }
+
+/* ---- buttons ---- */
+.btn {
+  display: inline-block;
+  padding: 14px 26px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 15px;
+  border-radius: 2px;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.btn--solid { background: var(--ink); color: var(--bg); }
+.btn--solid:hover { background: var(--accent); }
+.btn--ghost { border: 1.5px solid var(--line); color: var(--ink); }
+.btn--ghost:hover { border-color: var(--ink); }
+
+/* ---- section label (mono header with heavy underline) ---- */
+.label-head {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: .2em;
+  color: var(--ink-soft);
+  border-bottom: var(--border);
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; scroll-behavior: auto; }
+}

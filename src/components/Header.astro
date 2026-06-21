@@ -1,0 +1,119 @@
+---
+interface Props {
+  navLinks: { href: string; label: string }[];
+  isActive: (href: string) => boolean;
+}
+const { navLinks, isActive } = Astro.props;
+---
+
+<header class="hdr">
+  <a class="hdr__brand" href="/">LW<span class="accent">.</span></a>
+
+  <nav class="hdr__nav">
+    {
+      navLinks.map((l) => (
+        <a
+          class:list={['hdr__link', { 'hdr__link--active': isActive(l.href) }]}
+          href={l.href}
+        >
+          {l.label}
+        </a>
+      ))
+    }
+  </nav>
+
+  <div class="hdr__right">
+    <button class="hdr__theme" data-theme-toggle aria-label="Toggle color theme">
+      <span data-theme-icon>☾</span>
+      <span class="hdr__theme-label" data-theme-label>Dark</span>
+    </button>
+    <button
+      class="hdr__menu"
+      id="menu-btn"
+      aria-label="Open menu"
+      aria-expanded="false"
+    >
+      <span class="burger" id="burger">
+        <span></span><span></span><span></span>
+      </span>
+    </button>
+  </div>
+</header>
+
+<style>
+  .hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 18px 6vw;
+    border-bottom: var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--bg);
+  }
+  .hdr__brand {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 26px;
+    text-decoration: none;
+    color: var(--ink);
+    letter-spacing: -.02em;
+  }
+  .hdr__nav { display: flex; gap: 4px; }
+  .hdr__link {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink-soft);
+    padding: 8px 14px;
+    border: 1px solid transparent;
+    transition: color .15s, border-color .15s, background .15s;
+  }
+  .hdr__link:hover { color: var(--ink); border-color: var(--line); }
+  .hdr__link--active { color: var(--bg); background: var(--ink); border-color: var(--ink); }
+
+  .hdr__right { display: flex; align-items: center; gap: 8px; }
+  .hdr__theme {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 13px;
+    border: 1px solid var(--line);
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: .08em;
+    transition: border-color .15s;
+  }
+  .hdr__theme:hover { border-color: var(--ink); }
+
+  .hdr__menu {
+    display: none;
+    background: none;
+    border: 1px solid var(--line);
+    padding: 11px;
+    cursor: pointer;
+  }
+  .burger { display: flex; flex-direction: column; gap: 5px; width: 22px; }
+  .burger span {
+    height: 2px;
+    background: var(--ink);
+    transition: transform .3s, opacity .3s;
+  }
+  .burger--open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .burger--open span:nth-child(2) { opacity: 0; }
+  .burger--open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* mobile: collapse inline nav, show burger */
+  @media (max-width: 720px) {
+    .hdr__nav { display: none; }
+    .hdr__theme-label { display: none; }
+    .hdr__menu { display: block; }
+  }
+</style>

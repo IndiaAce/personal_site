@@ -1,0 +1,164 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Luke Wescott — Threat Detection Engineer',
+  description = 'Luke Wescott — Threat Detection Engineer at Sublime Security. Building ML-driven detection systems that catch what rules miss.',
+} = Astro.props;
+
+const navLinks = [
+  { href: '/', label: 'Home' },
+  { href: '/resume', label: 'Résumé' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/github', label: 'GitHub' },
+];
+
+const path = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === '/' ? path === '/' : path.startsWith(href);
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Set theme before paint to avoid flash -->
+    <script is:inline>
+      (function () {
+        try {
+          var t = localStorage.getItem('theme');
+          if (!t)
+            t = matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light';
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <Header navLinks={navLinks} isActive={isActive} />
+
+    <main>
+      <slot />
+    </main>
+
+    <Footer />
+
+    <!-- Full-screen brutalist overlay nav (mobile) -->
+    <div class="overlay" id="overlay" aria-hidden="true">
+      <nav class="overlay__nav">
+        {
+          navLinks.map((l, i) => (
+            <a class="overlay__link" href={l.href}>
+              <span class="overlay__num">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              {l.label}
+            </a>
+          ))
+        }
+      </nav>
+    </div>
+
+    <script is:inline>
+      (function () {
+        var btn = document.getElementById('menu-btn');
+        var overlay = document.getElementById('overlay');
+        var burger = document.getElementById('burger');
+        var open = false;
+        function setMenu(v) {
+          open = v;
+          overlay.classList.toggle('overlay--open', v);
+          overlay.setAttribute('aria-hidden', String(!v));
+          burger && burger.classList.toggle('burger--open', v);
+          if (btn) btn.setAttribute('aria-expanded', String(v));
+          document.body.style.overflow = v ? 'hidden' : '';
+        }
+        btn && btn.addEventListener('click', function () { setMenu(!open); });
+        overlay &&
+          overlay.querySelectorAll('a').forEach(function (a) {
+            a.addEventListener('click', function () { setMenu(false); });
+          });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && open) setMenu(false);
+        });
+
+        // theme toggle
+        var tbtns = document.querySelectorAll('[data-theme-toggle]');
+        function curTheme() {
+          return document.documentElement.getAttribute('data-theme') || 'light';
+        }
+        function syncIcons() {
+          var dark = curTheme() === 'dark';
+          tbtns.forEach(function (b) {
+            var icon = b.querySelector('[data-theme-icon]');
+            var lbl = b.querySelector('[data-theme-label]');
+            if (icon) icon.textContent = dark ? '☀' : '☾';
+            if (lbl) lbl.textContent = dark ? 'Light' : 'Dark';
+          });
+        }
+        tbtns.forEach(function (b) {
+          b.addEventListener('click', function () {
+            var next = curTheme() === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            try { localStorage.setItem('theme', next); } catch (e) {}
+            syncIcons();
+          });
+        });
+        syncIcons();
+      })();
+    </script>
+
+    <style>
+      /* ---- overlay nav ---- */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: var(--ink);
+        z-index: 60;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0 8vw;
+        clip-path: inset(0 0 100% 0);
+        transition: clip-path .6s cubic-bezier(.76, 0, .24, 1);
+      }
+      .overlay--open { clip-path: inset(0 0 0 0); }
+      .overlay__link {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: clamp(40px, 11vw, 96px);
+        line-height: 1.05;
+        color: var(--bg);
+        text-decoration: none;
+        display: flex;
+        align-items: baseline;
+        gap: 20px;
+        transition: color .15s;
+      }
+      .overlay__link:hover { color: var(--accent); }
+      .overlay__num {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        color: var(--accent);
+      }
+    </style>
+  </body>
+</html>

@@ -1,0 +1,41 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="ftr">
+  <div class="ftr__row">
+    <span class="ftr__brand">LUKE WESCOTT</span>
+    <span>THREAT DETECTION ENGINEER</span>
+    <span>EST. SUBLIME SECURITY</span>
+  </div>
+  <div class="ftr__row ftr__row--sub">
+    <span>© {year}</span>
+    <a href="https://github.com/IndiaAce" target="_blank" rel="noopener noreferrer"
+      >github.com/IndiaAce</a
+    >
+    <span>EN · FR (B1)</span>
+  </div>
+</footer>
+
+<style>
+  .ftr {
+    border-top: var(--border);
+    padding: 22px 6vw 30px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .ftr__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .ftr__brand { color: var(--ink); font-weight: 700; }
+  .ftr__row--sub { margin-top: 12px; opacity: .8; }
+  .ftr__row--sub a { color: var(--accent); text-decoration: none; }
+  .ftr__row--sub a:hover { text-decoration: underline; }
+</style>

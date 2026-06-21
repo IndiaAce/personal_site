@@ -1,0 +1,453 @@
+---
+import Base from '../layouts/Base.astro';
+
+const meta = [
+  { k: 'LOCATION', v: 'Burlington, VT' },
+  { k: 'LANGUAGES', v: 'EN · FR (B1)' },
+  { k: 'GITHUB', v: '@IndiaAce', href: 'https://github.com/IndiaAce' },
+  { k: 'LINKEDIN', v: 'in/luke-wescott', href: 'https://www.linkedin.com/in/luke-wescott-ba027a1ab/' },
+  { k: 'EMAIL', v: 'lukewescott808@gmail.com', href: 'mailto:lukewescott808@gmail.com' },
+];
+
+// short = distilled headline (concise view) · detail = full résumé content (expanded)
+const experience = [
+  {
+    role: 'Detection Engineer II',
+    org: 'Sublime Security',
+    location: 'Remote',
+    period: 'May 2025 — Present',
+    bullets: [
+      {
+        short: 'Bridge the ML and Detection Engineering teams',
+        detail:
+          'Curate atomic detection rules that shape ML-based verdicts — giving detection engineering direct influence over model outcomes to maximize efficacy.',
+      },
+      {
+        short: 'Maintain 800+ detection rules for hundreds of global customers',
+        detail:
+          'Continuously update, manage, and expand the ruleset while tuning false-positive and false-negative rates against constantly evolving threats.',
+      },
+      {
+        short: 'Help lead and grow the detection team',
+        detail:
+          'Mentor a growing team of 3 junior detection engineers, support customer escalations, and interview candidates — helping grow the team from 5 to 13.',
+      },
+    ],
+  },
+  {
+    role: 'Detection Engineer',
+    org: 'NuHarbor Security',
+    location: 'Colchester, VT',
+    period: 'Jun 2024 — May 2025',
+    bullets: [
+      {
+        short: 'Built detection-as-code pipelines — +40% threat detection',
+        detail:
+          'Designed and deployed detection-as-code CI/CD pipelines, improving threat detection by 40%.',
+      },
+      {
+        short: 'Automated detection with Python + SPL — −30% false positives',
+        detail:
+          'Automated threat detection using Python and SPL, reducing false positives by 30%.',
+      },
+      {
+        short: 'Drove detection use cases through threat modeling',
+        detail:
+          'Conducted threat modeling and attack-path analysis and collaborated with intelligence teams to integrate new threat feeds, expanding detection coverage.',
+      },
+      {
+        short: 'Built proprietary SOC automation tooling — +50% tuning efficiency',
+        detail:
+          'Built proprietary tools to automate SOC workflows, improving tuning efficiency by 50%, and optimized detection systems for GCP and Azure environments.',
+      },
+    ],
+  },
+  {
+    role: 'Security Engineer',
+    org: 'NuHarbor Security',
+    location: 'Colchester, VT',
+    period: 'Jun 2023 — Jun 2024',
+    bullets: [
+      {
+        short: 'Delivered tailored Splunk solutions for SOC analysts',
+        detail:
+          'Built and administered Splunk environments that gave SOC analysts real-time insight and improved data-collection efficiency.',
+      },
+      {
+        short: 'Designed detection strategies around client needs',
+        detail:
+          'Aligned detection strategies to client requirements, improving alert fidelity.',
+      },
+    ],
+  },
+  {
+    role: 'IT Staff',
+    org: 'Evergreen Parks & Recreation District',
+    location: 'Evergreen, CO',
+    period: '2021 — 2022',
+    bullets: [
+      {
+        short: 'Kept POS systems and networks running',
+        detail:
+          'Resolved technical issues across POS systems and networks, and built a Python ticket-management app that cut response time by 25%.',
+      },
+    ],
+  },
+  {
+    role: 'Technology & Merchandising Pro',
+    org: 'Apple',
+    location: 'Denver, CO',
+    period: '2019 — 2021',
+    bullets: [
+      {
+        short: 'Managed the Cherry Creek demo fleet via MDM',
+        detail:
+          'Deployed and managed the entire fleet of demo products via internal MDM, and led the merchandising reset for the flagship store relocation.',
+      },
+    ],
+  },
+];
+
+const education = [
+  {
+    deg: 'M.Sc — Artificial Intelligence & Machine Learning',
+    school: 'Colorado State University Global',
+    sub: 'Jan 2025 · GPA 3.96',
+  },
+  {
+    deg: 'B.Sc — Computer Science',
+    school: 'Colorado State University Global',
+    sub: '2023 · GPA 3.9',
+  },
+];
+
+const certs = [
+  'Splunk Certified Enterprise Admin · exp. Aug 2026',
+  'Splunk Certified Power User · exp. Aug 2026',
+];
+
+const skills = [
+  'Python', 'Splunk / SPL', 'Detection-as-Code', 'GitOps · CI/CD',
+  'Machine Learning', 'TensorFlow', 'Cloud Security (AWS·Azure·GCP)',
+  'MITRE ATT&CK', 'Anomaly Detection', 'Email Analysis',
+  'Microsoft Sentinel', 'Linux',
+];
+
+const work = [
+  { title: '“Prompt injection attacks don’t look like the headlines”', where: 'Sublime Security ↗', href: 'https://sublime.security/blog/prompt-injection-attacks-dont-look-like-what-youre-seeing-in-social-media-and-headlines/' },
+  { title: '“Using AI signals within malicious email”', where: 'Sublime Security ↗', href: 'https://sublime.security/blog/using-ai-signals-within-malicious-email-for-attack-detection-and-threat-hunting/' },
+  { title: '“You’ve been invited to join a Meta for Business scam!”', where: 'Sublime Security ↗', href: 'https://sublime.security/blog/youve-been-invited-to-join-a-meta-for-business-scam/' },
+  { title: 'Content-Sync Deployment Automation', where: '−70% manual deploy time · Bash + Python', href: null },
+  { title: 'ML SPL Generator — M.Sc capstone', where: 'Turns threat-writeup IOCs into Splunk SPL', href: null },
+];
+---
+
+<Base title="Résumé — Luke Wescott">
+  <section class="rs wrap">
+    <div class="rs__grid">
+      <aside class="rs__side">
+        <div class="rs__photo">
+          <img src="/assets/luke.jpg" alt="Luke Wescott" />
+          <div class="rs__photo-tint"></div>
+        </div>
+        <div class="rs__meta">
+          {
+            meta.map((m) => (
+              <div class="rs__meta-row">
+                <span>{m.k}</span>
+                {m.href ? (
+                  <a class="rs__meta-val rs__meta-link" href={m.href}>{m.v}</a>
+                ) : (
+                  <span class="rs__meta-val">{m.v}</span>
+                )}
+              </div>
+            ))
+          }
+        </div>
+      </aside>
+
+      <div class="rs__main">
+        <div class="kicker">LIVING RÉSUMÉ</div>
+        <h1 class="rs__name">Luke Wescott</h1>
+        <p class="rs__intro">
+          Detection Engineer specializing in ML-driven, detection-as-code systems
+          — designing and tuning the detections that catch real threats at global
+          scale. M.Sc in AI &amp; Machine Learning. Off the clock: French lessons,
+          hockey, books, and new music.
+        </p>
+
+        <div class="rs__exphead">
+          <div class="label-head rs__exphead-label">EXPERIENCE</div>
+          <button
+            class="rs__verbose"
+            id="verbose-toggle"
+            type="button"
+            aria-pressed="false"
+          >
+            <span class="rs__verbose-dot"></span>
+            <span data-vlabel>Verbose</span>
+          </button>
+        </div>
+        <p class="rs__hint">Tap any line to expand it — or flip to verbose.</p>
+
+        <ul class="rs__exp" id="experience">
+          {
+            experience.map((e) => (
+              <li class="rs__role">
+                <div class="rs__role-head">
+                  <div>
+                    <span class="rs__role-title">{e.role}</span>
+                    <span class="rs__role-org">{e.org}</span>
+                  </div>
+                  <div class="rs__role-period">
+                    {e.period}
+                    <span class="rs__role-loc">{e.location}</span>
+                  </div>
+                </div>
+                <ul class="rs__bullets">
+                  {e.bullets.map((b) => (
+                    <li class="exp">
+                      <button class="exp__head" type="button" aria-expanded="false">
+                        <span class="exp__chev">▸</span>
+                        <span class="exp__short">{b.short}</span>
+                      </button>
+                      <div class="exp__detailwrap">
+                        <div class="exp__detail">{b.detail}</div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))
+          }
+        </ul>
+
+        <div class="rs__cols">
+          <div>
+            <div class="label-head">EDUCATION</div>
+            {
+              education.map((ed) => (
+                <div class="rs__edu">
+                  <div class="rs__edu-deg">{ed.deg}</div>
+                  <div class="rs__edu-school">{ed.school}</div>
+                  <div class="rs__edu-sub">{ed.sub}</div>
+                </div>
+              ))
+            }
+            <div class="label-head rs__cert-head">CERTIFICATIONS</div>
+            {certs.map((c) => <div class="rs__cert">{c}</div>)}
+          </div>
+
+          <div>
+            <div class="label-head">CAPABILITIES</div>
+            <div class="rs__skills">
+              {skills.map((s) => <span class="pill">{s}</span>)}
+            </div>
+            <div class="label-head rs__work-head">SELECTED WORK &amp; WRITING</div>
+            {
+              work.map((w) => (
+                <div class="rs__work">
+                  {w.href ? (
+                    <a class="rs__work-title rs__meta-link" href={w.href} target={w.href.startsWith('#') ? null : '_blank'} rel="noopener noreferrer">
+                      {w.title}
+                    </a>
+                  ) : (
+                    <span class="rs__work-title">{w.title}</span>
+                  )}
+                  <div class="rs__work-where">{w.where}</div>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const root = document.getElementById('experience');
+  if (root) {
+    root.querySelectorAll('.exp__head').forEach((h) => {
+      h.addEventListener('click', () => {
+        const li = h.closest('.exp');
+        const open = li.classList.toggle('exp--open');
+        h.setAttribute('aria-expanded', String(open));
+      });
+    });
+
+    const vbtn = document.getElementById('verbose-toggle');
+    let verbose = false;
+    vbtn?.addEventListener('click', () => {
+      verbose = !verbose;
+      root.querySelectorAll('.exp').forEach((li) => {
+        li.classList.toggle('exp--open', verbose);
+        li.querySelector('.exp__head')?.setAttribute('aria-expanded', String(verbose));
+      });
+      const lbl = vbtn.querySelector('[data-vlabel]');
+      if (lbl) lbl.textContent = verbose ? 'Concise' : 'Verbose';
+      vbtn.setAttribute('aria-pressed', String(verbose));
+      vbtn.classList.toggle('rs__verbose--on', verbose);
+    });
+  }
+</script>
+
+<style>
+  .rs { padding: 54px 0 80px; }
+  .rs__grid {
+    display: grid;
+    grid-template-columns: 0.9fr 1.4fr;
+    gap: 64px;
+    align-items: start;
+  }
+  .rs__side { position: sticky; top: 90px; }
+  .rs__photo { position: relative; overflow: hidden; border: var(--border); }
+  .rs__photo img { width: 100%; display: block; filter: grayscale(1) contrast(1.04); }
+  .rs__photo-tint {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 55%, var(--accent));
+    mix-blend-mode: multiply;
+    opacity: .32;
+  }
+  .rs__meta { margin-top: 22px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); }
+  .rs__meta-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--line);
+    padding: 8px 0;
+  }
+  .rs__meta-val { color: var(--ink); text-align: right; word-break: break-word; }
+  .rs__meta-link { text-decoration: none; }
+  .rs__meta-link:hover { color: var(--accent); }
+
+  .rs__name { font-size: clamp(48px, 7vw, 88px); line-height: .92; margin: 10px 0 18px; }
+  .rs__intro { font-size: 19px; line-height: 1.6; color: var(--ink-soft); max-width: 560px; margin: 0 0 40px; }
+
+  /* experience header + verbose toggle */
+  .rs__exphead { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+  .rs__exphead-label { flex: 1; margin-bottom: 16px; }
+  .rs__verbose {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 7px 13px;
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color .15s, background .15s, color .15s;
+  }
+  .rs__verbose:hover { border-color: var(--ink); }
+  .rs__verbose--on { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .rs__verbose-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-soft); }
+  .rs__verbose--on .rs__verbose-dot { background: var(--bg); }
+
+  .rs__hint {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .04em;
+    color: var(--ink-soft);
+    margin: 0 0 14px;
+    opacity: .8;
+  }
+
+  .rs__exp { list-style: none; margin: 0; padding: 0; }
+  .rs__role { padding: 20px 0; border-bottom: 1px solid var(--line); }
+  .rs__role:first-child { border-top: 1px solid var(--line); }
+  .rs__role-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .rs__role-title { font-size: 22px; font-weight: 600; color: var(--ink); }
+  .rs__role-org {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--accent);
+    margin-left: 12px;
+  }
+  .rs__role-period {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: right;
+    white-space: nowrap;
+  }
+  .rs__role-loc { display: block; opacity: .7; margin-top: 2px; }
+
+  /* expandable bullets */
+  .rs__bullets { list-style: none; margin: 0; padding: 0; }
+  .exp { border-top: 1px dashed var(--line); }
+  .exp:first-child { border-top: 0; }
+  .exp__head {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: 0;
+    padding: 11px 0;
+    cursor: pointer;
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.45;
+    transition: color .15s;
+  }
+  .exp__head:hover { color: var(--accent); }
+  .exp__chev {
+    color: var(--accent);
+    font-size: 13px;
+    line-height: 1.7;
+    transition: transform .25s ease;
+    flex-shrink: 0;
+  }
+  .exp--open .exp__chev { transform: rotate(90deg); }
+  .exp__short { flex: 1; }
+
+  .exp__detailwrap {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows .3s ease;
+  }
+  .exp--open .exp__detailwrap { grid-template-rows: 1fr; }
+  .exp__detail {
+    overflow: hidden;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    padding-left: 23px;
+  }
+  .exp--open .exp__detail { padding-bottom: 12px; }
+
+  .rs__cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; margin-top: 44px; }
+  .rs__edu { margin-bottom: 16px; }
+  .rs__edu-deg { font-size: 17px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+  .rs__edu-school { font-size: 14px; color: var(--ink-soft); margin-top: 3px; }
+  .rs__edu-sub { font-size: 13px; color: var(--ink-soft); margin-top: 2px; font-family: var(--font-mono); }
+  .rs__cert-head, .rs__work-head { margin-top: 30px; }
+  .rs__cert { font-size: 14px; color: var(--ink-soft); padding: 5px 0; font-family: var(--font-mono); }
+
+  .rs__skills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .rs__work { padding: 9px 0; border-bottom: 1px solid var(--line); }
+  .rs__work:first-of-type { border-top: 1px solid var(--line); }
+  .rs__work-title { font-size: 15px; color: var(--ink); font-weight: 500; text-decoration: none; }
+  .rs__work-where { font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; font-family: var(--font-mono); }
+
+  @media (max-width: 860px) {
+    .rs__grid { grid-template-columns: 1fr; gap: 40px; }
+    .rs__side { position: static; max-width: 360px; }
+    .rs__cols { grid-template-columns: 1fr; gap: 30px; }
+  }
+</style>

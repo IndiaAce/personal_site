@@ -1,0 +1,84 @@
+---
+import Base from '../layouts/Base.astro';
+import Marquee from '../components/Marquee.astro';
+
+const navTiles = [
+  { num: '01', label: 'Writing', href: '/blog' },
+  { num: '02', label: 'Résumé', href: '/resume' },
+  { num: '03', label: 'GitHub', href: '/github' },
+  { num: '04', label: 'Now', href: '/blog' },
+];
+
+const marquee = ['M.Sc AI/ML', 'Threat Detection', 'B1 Français', 'Machine Learning'];
+---
+
+<Base>
+  <section class="home wrap">
+    <div class="home__meta">
+      <span class="home__name">LUKE WESCOTT</span>
+      <span>THREAT DETECTION ENGINEER</span>
+      <span>EST. SUBLIME SECURITY</span>
+    </div>
+
+    <div class="home__hero">
+      <div class="kicker">PORTFOLIO / 2026 —</div>
+      <h1 class="display">
+        Detection<br /><span class="accent">engineer</span> &amp;<br />builder.
+      </h1>
+      <p class="home__lede">
+        I hunt the signal in the noise — building ML-driven detection systems
+        that catch what rules miss. Writing, shipping, and occasionally breaking
+        things on purpose.
+      </p>
+    </div>
+  </section>
+
+  <Marquee items={marquee} />
+
+  <div class="tiles">
+    {
+      navTiles.map((t) => (
+        <a class="tile" href={t.href}>
+          <span class="tile__num">{t.num}</span>
+          <span class="tile__label">{t.label}</span>
+        </a>
+      ))
+    }
+  </div>
+</Base>
+
+<style>
+  .home { padding-top: 38px; }
+  .home__meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    border-bottom: var(--border);
+    padding-bottom: 14px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .home__name { color: var(--ink); font-weight: 500; }
+
+  .home__hero { padding: 8vh 0 7vh; }
+  .home .kicker { margin-bottom: 10px; display: block; }
+  .home__lede {
+    max-width: 620px;
+    margin: 34px 0 0;
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 720px) {
+    .home__meta { gap: 6px; }
+    .tiles { flex-direction: column; }
+    .tile { border-right: 0; border-bottom: var(--border); }
+    .tile:last-child { border-bottom: 0; }
+  }
+</style>

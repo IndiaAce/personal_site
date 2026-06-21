@@ -1,0 +1,105 @@
+---
+import Base from '../../layouts/Base.astro';
+import { posts } from '../../data/posts';
+---
+
+<Base title="Writing — Luke Wescott">
+  <section class="bl wrap">
+    <div class="bl__head">
+      <div class="kicker">WRITING / NOTES</div>
+      <h1 class="bl__title">Detections, written like prose.</h1>
+      <p class="bl__lede">
+        Field notes on detection engineering, machine learning, and the craft of
+        finding what hides in the noise. Most pieces are published on the
+        Sublime Security blog.
+      </p>
+    </div>
+
+    <div class="label-head">SELECTED — RECENT</div>
+    <div class="bl__list">
+      {
+        posts.map((p) => {
+          const href = p.external ?? `/blog/${p.slug}`;
+          const ext = Boolean(p.external);
+          return (
+            <a
+              class="bl__post"
+              href={href}
+              target={ext ? '_blank' : null}
+              rel={ext ? 'noopener noreferrer' : null}
+            >
+              <div class="bl__post-meta">
+                <span>{p.tag}</span>
+                <span>{p.date}</span>
+              </div>
+              <div class="bl__post-title">{p.title}</div>
+              <p class="bl__post-excerpt">{p.excerpt}</p>
+              <div class="bl__post-read">
+                {ext ? `${p.source} ↗` : 'Read →'}
+              </div>
+            </a>
+          );
+        })
+      }
+    </div>
+  </section>
+</Base>
+
+<style>
+  .bl { padding: 54px 0 80px; max-width: 880px; }
+  .bl__head { margin-bottom: 48px; }
+  .bl__title {
+    font-size: clamp(40px, 6vw, 76px);
+    line-height: .98;
+    margin: 12px 0 22px;
+  }
+  .bl__lede {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    max-width: 560px;
+    margin: 0;
+  }
+
+  .bl__list { display: flex; flex-direction: column; }
+  .bl__post {
+    display: block;
+    text-decoration: none;
+    color: var(--ink);
+    padding: 26px 0;
+    border-bottom: 1px solid var(--line);
+    transition: opacity .15s;
+  }
+  .bl__post:first-child { border-top: 1px solid var(--line); }
+  .bl__post:hover { opacity: .62; }
+  .bl__post-meta {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .bl__post-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(24px, 3.4vw, 32px);
+    line-height: 1.12;
+    letter-spacing: -.01em;
+  }
+  .bl__post-excerpt {
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin: 12px 0 10px;
+    max-width: 620px;
+  }
+  .bl__post-read {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: .06em;
+  }
+</style>

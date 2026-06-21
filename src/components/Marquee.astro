@@ -1,0 +1,21 @@
+---
+interface Props {
+  items: string[];
+}
+const { items } = Astro.props;
+// duplicate so the -50% translate loops seamlessly
+const loop = [...items, ...items];
+---
+
+<div class="marquee">
+  <div class="marquee__track">
+    {
+      loop.map((item, i) => (
+        <>
+          <span>{item}</span>
+          {i < loop.length - 1 && <>✦</>}
+        </>
+      ))
+    }
+  </div>
+</div>
