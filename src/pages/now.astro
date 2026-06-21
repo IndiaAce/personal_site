@@ -1,0 +1,111 @@
+---
+import Base from '../layouts/Base.astro';
+
+const updated = 'JUN 2026';
+
+const nowItems = [
+  {
+    k: 'CURRENTLY',
+    v: 'Detection Engineer II at Sublime Security — shipping ML-driven detection that catches what static rules miss, and helping grow the detection team.',
+  },
+  {
+    k: 'LEARNING',
+    v: 'French — pushing from B1 toward B2, one stubborn subjunctive at a time.',
+  },
+  {
+    k: 'BUILDING',
+    v: 'Detection-as-code tooling and ML pipelines that turn behavioral signal into high-fidelity coverage.',
+  },
+  {
+    k: 'BASED',
+    v: 'Burlington, VT — online as @IndiaAce.',
+  },
+];
+---
+
+<Base title="Now — Luke Wescott">
+  <section class="now wrap">
+    <div class="now__kicker">
+      04 — NOW <span class="now__updated">· UPDATED {updated}</span>
+    </div>
+    <h1 class="now__title">What I'm doing now</h1>
+    <p class="now__lede">
+      A snapshot of where my focus is — inspired by Derek Sivers'
+      <span class="now__em">/now</span> page idea.
+    </p>
+
+    <div class="now__list">
+      {
+        nowItems.map((i) => (
+          <div class="now__row" data-target={i.k}>
+            <div class="now__k">{i.k}</div>
+            <div class="now__v">{i.v}</div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</Base>
+
+<style>
+  .now {
+    padding: 6vh 0 12vh;
+    max-width: 880px;
+    animation: rise .5s ease both;
+  }
+  .now__kicker {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: .24em;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .now__updated { color: var(--ink-soft); letter-spacing: .1em; }
+
+  .now__title {
+    font-size: clamp(42px, 6.5vw, 84px);
+    line-height: .95;
+    letter-spacing: -.015em;
+    margin: 0 0 16px;
+  }
+  .now__lede {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    max-width: 560px;
+    margin: 0 0 48px;
+  }
+  .now__em { color: var(--ink); }
+
+  .now__list { display: flex; flex-direction: column; }
+  .now__row {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 24px;
+    align-items: start;
+    padding: 26px 4px;
+    border-top: 1px solid var(--line);
+    transition: background .15s;
+  }
+  .now__row:last-child { border-bottom: 1px solid var(--line); }
+  .now__row:hover { background: var(--bg-elev); }
+  .now__k {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: .14em;
+    color: var(--accent);
+    padding-top: 5px;
+  }
+  .now__v {
+    font-size: clamp(18px, 2.2vw, 22px);
+    line-height: 1.5;
+    color: var(--ink);
+  }
+
+  @media (max-width: 600px) {
+    .now__row { grid-template-columns: 1fr; gap: 8px; }
+  }
+</style>

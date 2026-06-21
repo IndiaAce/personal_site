@@ -146,7 +146,7 @@ const work = [
   <section class="rs wrap">
     <div class="rs__grid">
       <aside class="rs__side">
-        <div class="rs__photo">
+        <div class="rs__photo" data-target="Portrait">
           <img src="/assets/luke.jpg" alt="Luke Wescott" />
           <div class="rs__photo-tint"></div>
         </div>
@@ -193,7 +193,7 @@ const work = [
         <ul class="rs__exp" id="experience">
           {
             experience.map((e) => (
-              <li class="rs__role">
+              <li class="rs__role" data-target={e.role}>
                 <div class="rs__role-head">
                   <div>
                     <span class="rs__role-title">{e.role}</span>

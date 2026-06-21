@@ -157,7 +157,7 @@ const legend = [0, 1, 2, 3, 4];
     <div class="gh__repos">
       {
         repos.map((r) => (
-          <a class="gh__repo" href={r.url} target="_blank" rel="noopener noreferrer">
+          <a class="gh__repo" href={r.url} target="_blank" rel="noopener noreferrer" data-target={r.name}>
             <div class="gh__repo-name">
               <span class="gh__repo-dot" />
               {r.name}

@@ -7,7 +7,7 @@ const { navLinks, isActive } = Astro.props;
 ---
 
 <header class="hdr">
-  <a class="hdr__brand" href="/">LW<span class="accent">.</span></a>
+  <a class="hdr__brand" href="/" data-target="Home">LW<span class="accent">.</span></a>
 
   <nav class="hdr__nav">
     {
@@ -15,6 +15,7 @@ const { navLinks, isActive } = Astro.props;
         <a
           class:list={['hdr__link', { 'hdr__link--active': isActive(l.href) }]}
           href={l.href}
+          data-target={l.label}
         >
           {l.label}
         </a>
@@ -23,7 +24,7 @@ const { navLinks, isActive } = Astro.props;
   </nav>
 
   <div class="hdr__right">
-    <button class="hdr__theme" data-theme-toggle aria-label="Toggle color theme">
+    <button class="hdr__theme" data-theme-toggle data-target="Theme" aria-label="Toggle color theme">
       <span data-theme-icon>☾</span>
       <span class="hdr__theme-label" data-theme-label>Dark</span>
     </button>

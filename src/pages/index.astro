@@ -6,7 +6,7 @@ const navTiles = [
   { num: '01', label: 'Writing', href: '/blog' },
   { num: '02', label: 'Résumé', href: '/resume' },
   { num: '03', label: 'GitHub', href: '/github' },
-  { num: '04', label: 'Now', href: '/blog' },
+  { num: '04', label: 'Now', href: '/now' },
 ];
 
 const marquee = ['M.Sc AI/ML', 'Threat Detection', 'B1 Français', 'Machine Learning'];
@@ -14,71 +14,93 @@ const marquee = ['M.Sc AI/ML', 'Threat Detection', 'B1 Français', 'Machine Lear
 
 <Base>
   <section class="home wrap">
-    <div class="home__meta">
-      <span class="home__name">LUKE WESCOTT</span>
-      <span>THREAT DETECTION ENGINEER</span>
-      <span>EST. SUBLIME SECURITY</span>
+    <div class="home__status">
+      <span class="home__dot"></span>AVAILABLE FOR THE INTERESTING
     </div>
 
-    <div class="home__hero">
-      <div class="kicker">PORTFOLIO / 2026 —</div>
-      <h1 class="display">
-        Detection<br /><span class="accent">engineer</span> &amp;<br />builder.
-      </h1>
-      <p class="home__lede">
-        I hunt the signal in the noise — building ML-driven detection systems
-        that catch what rules miss. Writing, shipping, and occasionally breaking
-        things on purpose.
-      </p>
+    <h1 class="home__name">Luke<br />Wescott<span class="accent">.</span></h1>
+
+    <p class="home__lede">
+      Threat Detection Engineer at <span class="home__lede-em">Sublime Security</span>.
+      I hunt the signal in the noise — building ML detection that catches what
+      static rules miss.
+    </p>
+
+    <div class="home__nav">
+      {
+        navTiles.map((t) => (
+          <a class="tile" href={t.href} data-target={t.label}>
+            <span class="tile__num">{t.num}</span>
+            <span class="tile__label">{t.label}</span>
+          </a>
+        ))
+      }
     </div>
   </section>
 
   <Marquee items={marquee} />
-
-  <div class="tiles">
-    {
-      navTiles.map((t) => (
-        <a class="tile" href={t.href}>
-          <span class="tile__num">{t.num}</span>
-          <span class="tile__label">{t.label}</span>
-        </a>
-      ))
-    }
-  </div>
 </Base>
 
 <style>
-  .home { padding-top: 38px; }
-  .home__meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
+  .home {
+    padding: 7vh 0 9vh;
+    animation: rise .5s ease both;
+  }
+
+  .home__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
     font-family: var(--font-mono);
     font-size: 12px;
-    letter-spacing: .18em;
-    text-transform: uppercase;
+    letter-spacing: .2em;
     color: var(--ink-soft);
-    border-bottom: var(--border);
-    padding-bottom: 14px;
-    gap: 16px;
-    flex-wrap: wrap;
+    margin-bottom: 26px;
   }
-  .home__name { color: var(--ink); font-weight: 500; }
+  .home__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #28c840;
+    box-shadow: 0 0 10px #28c840;
+    animation: rtPulse 2.2s ease-in-out infinite;
+  }
 
-  .home__hero { padding: 8vh 0 7vh; }
-  .home .kicker { margin-bottom: 10px; display: block; }
+  .home__name {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(54px, 9.5vw, 142px);
+    line-height: .88;
+    letter-spacing: -.025em;
+    color: var(--ink);
+    margin: 0 0 28px;
+  }
+
   .home__lede {
-    max-width: 620px;
-    margin: 34px 0 0;
-    font-size: 19px;
+    max-width: 560px;
+    margin: 0 0 44px;
+    font-size: clamp(18px, 2.4vw, 23px);
     line-height: 1.55;
     color: var(--ink-soft);
   }
+  .home__lede-em { color: var(--ink); font-weight: 600; }
+
+  /* bordered nav grid */
+  .home__nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    border: var(--border);
+    max-width: 760px;
+  }
+  .home__nav .tile {
+    border-right: var(--border);
+    padding: 24px 20px;
+  }
+  .home__nav .tile:last-child { border-right: 0; }
 
   @media (max-width: 720px) {
-    .home__meta { gap: 6px; }
-    .tiles { flex-direction: column; }
-    .tile { border-right: 0; border-bottom: var(--border); }
-    .tile:last-child { border-bottom: 0; }
+    .home__nav { grid-template-columns: 1fr; }
+    .home__nav .tile { border-right: 0; border-bottom: var(--border); }
+    .home__nav .tile:last-child { border-bottom: 0; }
   }
 </style>

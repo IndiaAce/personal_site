@@ -18,6 +18,7 @@ const navLinks = [
   { href: '/resume', label: 'Résumé' },
   { href: '/blog', label: 'Blog' },
   { href: '/github', label: 'GitHub' },
+  { href: '/now', label: 'Now' },
 ];
 
 const path = Astro.url.pathname;
@@ -53,6 +54,23 @@ const isActive = (href: string) =>
     </script>
   </head>
   <body>
+    <!-- grid spotlight revealed around the pointer (behind content) -->
+    <div class="rt-grid" id="rt-grid" aria-hidden="true"></div>
+
+    <!-- reticle / scope HUD (pointer-driven, never blocks clicks) -->
+    <div class="rt" id="rt" aria-hidden="true">
+      <div class="rt-lock" id="rt-lock">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <div class="rt-line rt-line--h"></div>
+      <div class="rt-line rt-line--v"></div>
+      <div class="rt-scope"></div>
+      <div class="rt-hud">
+        <div>SCAN · <span id="rt-status">CLEAR</span></div>
+        <div class="rt-coords" id="rt-coords">0000, 0000</div>
+      </div>
+    </div>
+
     <Header navLinks={navLinks} isActive={isActive} />
 
     <main>
@@ -126,7 +144,160 @@ const isActive = (href: string) =>
       })();
     </script>
 
+    <!-- reticle: guarded to fine pointers + motion; sets CSS vars on pointermove -->
+    <script is:inline>
+      (function () {
+        var fine = matchMedia('(pointer: fine)');
+        var noMotion = matchMedia('(prefers-reduced-motion: reduce)');
+        var rt = document.getElementById('rt');
+        var grid = document.getElementById('rt-grid');
+        var lock = document.getElementById('rt-lock');
+        var statusEl = document.getElementById('rt-status');
+        var coordsEl = document.getElementById('rt-coords');
+        var root = document.documentElement;
+
+        var on = false, bound = false, raf = 0;
+        var pmx = 0, pmy = 0, pTarget = null, pRect = null;
+
+        function pad(n) {
+          return String(Math.max(0, Math.round(n))).padStart(4, '0');
+        }
+
+        function flush() {
+          raf = 0;
+          root.style.setProperty('--rx', pmx + 'px');
+          root.style.setProperty('--ry', pmy + 'px');
+          coordsEl.textContent = pad(pmx) + ', ' + pad(pmy);
+          if (pRect) {
+            lock.style.opacity = '1';
+            lock.style.left = (pRect.left - 7) + 'px';
+            lock.style.top = (pRect.top - 7) + 'px';
+            lock.style.width = (pRect.width + 14) + 'px';
+            lock.style.height = (pRect.height + 14) + 'px';
+            statusEl.textContent = 'LOCKED';
+            statusEl.style.color = '#ff5f57';
+          } else {
+            lock.style.opacity = '0';
+            statusEl.textContent = 'CLEAR';
+            statusEl.style.color = 'var(--accent-live)';
+          }
+        }
+
+        function move(e) {
+          pmx = e.clientX;
+          pmy = e.clientY;
+          var t = e.target && e.target.closest ? e.target.closest('[data-target]') : null;
+          pTarget = t;
+          pRect = t ? t.getBoundingClientRect() : null;
+          if (!raf) raf = requestAnimationFrame(flush);
+        }
+
+        function enable() {
+          if (bound) return;
+          bound = true;
+          root.classList.add('reticle-active');
+          rt.style.display = 'block';
+          grid.style.display = 'block';
+          window.addEventListener('pointermove', move, { passive: true });
+        }
+        function disable() {
+          if (!bound) return;
+          bound = false;
+          root.classList.remove('reticle-active');
+          rt.style.display = 'none';
+          grid.style.display = 'none';
+          window.removeEventListener('pointermove', move);
+          if (raf) { cancelAnimationFrame(raf); raf = 0; }
+        }
+        function sync() {
+          on = fine.matches && !noMotion.matches;
+          if (on) enable(); else disable();
+        }
+
+        sync();
+        fine.addEventListener('change', sync);
+        noMotion.addEventListener('change', sync);
+      })();
+    </script>
+
     <style>
+      /* ---- reticle / scope layer ---- */
+      :root { --rx: 50%; --ry: 50%; }
+
+      /* keep page content above the grid spotlight */
+      main { position: relative; z-index: 1; }
+
+      .rt-grid {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background-image:
+          linear-gradient(var(--line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--line) 1px, transparent 1px);
+        background-size: 48px 48px;
+        opacity: .85;
+        -webkit-mask-image: radial-gradient(circle 230px at var(--rx) var(--ry), #000, transparent 72%);
+        mask-image: radial-gradient(circle 230px at var(--rx) var(--ry), #000, transparent 72%);
+      }
+
+      .rt { display: none; }
+      .rt-line {
+        position: fixed;
+        background: var(--accent);
+        opacity: .28;
+        z-index: 9044;
+        pointer-events: none;
+      }
+      .rt-line--h { left: 0; top: var(--ry); width: 100vw; height: 1px; }
+      .rt-line--v { left: var(--rx); top: 0; width: 1px; height: 100vh; }
+      .rt-scope {
+        position: fixed;
+        left: var(--rx);
+        top: var(--ry);
+        width: 46px;
+        height: 46px;
+        transform: translate(-50%, -50%);
+        border: 1.5px solid var(--accent);
+        border-radius: 50%;
+        z-index: 9045;
+        pointer-events: none;
+      }
+      .rt-hud {
+        position: fixed;
+        left: var(--rx);
+        top: var(--ry);
+        transform: translate(20px, 20px);
+        z-index: 9046;
+        pointer-events: none;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        letter-spacing: .06em;
+        line-height: 1.5;
+        white-space: nowrap;
+        background: var(--ink);
+        color: var(--bg);
+        padding: 6px 10px;
+        border-radius: 4px;
+      }
+      .rt-coords { opacity: .7; }
+      .rt-lock {
+        position: fixed;
+        left: 0; top: 0; width: 0; height: 0;
+        opacity: 0;
+        z-index: 9040;
+        pointer-events: none;
+        transition: all .12s cubic-bezier(.2, .8, .2, 1);
+      }
+      .rt-lock span { position: absolute; width: 13px; height: 13px; }
+      .rt-lock span:nth-child(1) { left: -1px; top: -1px; border-left: 2px solid var(--accent); border-top: 2px solid var(--accent); }
+      .rt-lock span:nth-child(2) { right: -1px; top: -1px; border-right: 2px solid var(--accent); border-top: 2px solid var(--accent); }
+      .rt-lock span:nth-child(3) { left: -1px; bottom: -1px; border-left: 2px solid var(--accent); border-bottom: 2px solid var(--accent); }
+      .rt-lock span:nth-child(4) { right: -1px; bottom: -1px; border-right: 2px solid var(--accent); border-bottom: 2px solid var(--accent); }
+
+      @media (max-width: 760px) { .rt, .rt-grid { display: none !important; } }
+
       /* ---- overlay nav ---- */
       .overlay {
         position: fixed;
