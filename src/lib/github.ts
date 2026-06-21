@@ -1,22 +1,23 @@
 // ============================================================
 // Per-repo daily contribution series for the GitHub page line graph.
 //
-// Uses GitHub's GraphQL `contributionsCollection` at BUILD time:
-//   • commitContributionsByRepository → per-repo, per-day commit counts
-//     (these become the named, color-coded public-repo lines)
-//   • contributionCalendar (daily totals) → used to derive a single
-//     "Private / other" line = calendar total − attributed public commits.
-//     This captures EVERYTHING not shown as a named public repo: private
-//     repo activity, plus non-commit contributions (PRs / issues / reviews).
-//     It makes the stacked lines reconcile to the headline total.
+// Why two data sources:
+//   • Daily TOTALS come from the PUBLIC contributions API (jogruber proxy of
+//     the profile graph). With "Include private contributions on my profile"
+//     enabled, this already includes the anonymized private counts — and it's
+//     immune to SAML SSO, which blocks API tokens from seeing org-private work
+//     (e.g. Sublime). This is how we recover the full ~1.6k total.
+//   • Per-repo PUBLIC commit lines come from GraphQL `commitContributionsByRepository`
+//     (any token works for public data). Private repos are NOT itemized.
 //
-// IMPORTANT — private contributions only appear with a **classic** PAT that
-// has `repo` + `read:user` scope. Fine-grained tokens return PUBLIC-ONLY data
-// (the calendar total will exclude private contributions). One window covers
-// every range the UI offers (1M / 3M / 6M / 1Y); the toggle filters client-side.
-//   • Local: put GITHUB_TOKEN=... in a .env file (git-ignored).
+// The "Private / other" line = daily public-profile total − attributed public
+// commits. It carries private repo activity + non-commit contributions
+// (PRs / issues / reviews) and makes the lines reconcile to the headline total.
+//
+// A token is only needed for the named public-repo lines:
+//   • Local: GITHUB_TOKEN=... in a .env file (git-ignored).
 //   • Cloudflare Pages: Settings → Environment variables → GITHUB_TOKEN.
-// Without a token this returns null and the page falls back to the heatmap.
+// Without a token the page falls back to the heatmap.
 // ============================================================
 
 const USER = 'IndiaAce';
@@ -61,11 +62,6 @@ const QUERY = `
 query($from: DateTime!, $to: DateTime!) {
   viewer {
     contributionsCollection(from: $from, to: $to) {
-      restrictedContributionsCount
-      contributionCalendar {
-        totalContributions
-        weeks { contributionDays { date contributionCount } }
-      }
       commitContributionsByRepository(maxRepositories: 100) {
         repository { name isPrivate }
         contributions(first: 100) {
@@ -79,16 +75,11 @@ query($from: DateTime!, $to: DateTime!) {
 const colorFor = (name: string, idx: number): string =>
   COLOR_MAP[name] ?? PALETTE[idx % PALETTE.length];
 
-export async function getContributionSeries(): Promise<ContribData | null> {
-  if (!TOKEN) {
-    console.warn('[github] no GITHUB_TOKEN set — skipping line graph (heatmap fallback).');
-    return null;
-  }
-
-  const to = new Date();
-  const from = new Date(to);
-  from.setFullYear(from.getFullYear() - 1);
-
+// Public per-repo commit breakdown (token, public data only).
+async function fetchPublicRepos(from: Date, to: Date): Promise<{
+  repos: { name: string; total: number; daily: Record<string, number> }[];
+  publicDailyTotal: Record<string, number>;
+}> {
   const res = await fetch('https://api.github.com/graphql', {
     method: 'POST',
     headers: {
@@ -101,32 +92,16 @@ export async function getContributionSeries(): Promise<ContribData | null> {
       variables: { from: from.toISOString(), to: to.toISOString() },
     }),
   });
-
   if (!res.ok) throw new Error('github graphql ' + res.status);
   const json = await res.json();
   if (json.errors) throw new Error('github graphql: ' + JSON.stringify(json.errors));
 
-  const cc = json.data?.viewer?.contributionsCollection;
-  if (!cc) throw new Error('github graphql: no contributionsCollection');
-
-  const total: number = cc.contributionCalendar?.totalContributions ?? 0;
-  const restricted: number = cc.restrictedContributionsCount ?? 0;
-
-  // Daily total of ALL contributions (commits + PRs + issues + reviews, and
-  // private too when the token can see them).
-  const calendarDaily: Record<string, number> = {};
-  for (const week of cc.contributionCalendar?.weeks ?? []) {
-    for (const d of week.contributionDays ?? []) {
-      if (d?.date) calendarDaily[d.date] = (calendarDaily[d.date] ?? 0) + (d.contributionCount ?? 0);
-    }
-  }
-
-  // Per-repo commit counts → public repos become named lines. We also track
-  // the per-day sum of attributed PUBLIC commits to derive the residual line.
+  const entries = json.data?.viewer?.contributionsCollection?.commitContributionsByRepository ?? [];
+  const repos: { name: string; total: number; daily: Record<string, number> }[] = [];
   const publicDailyTotal: Record<string, number> = {};
-  const publicRepos: { name: string; total: number; daily: Record<string, number> }[] = [];
 
-  for (const entry of cc.commitContributionsByRepository ?? []) {
+  for (const entry of entries) {
+    if (entry.repository?.isPrivate) continue; // private rolls into residual line
     const daily: Record<string, number> = {};
     let t = 0;
     for (const node of entry.contributions?.nodes ?? []) {
@@ -136,15 +111,39 @@ export async function getContributionSeries(): Promise<ContribData | null> {
       t += n;
     }
     if (t === 0) continue;
-
-    // Private repos are intentionally NOT drawn by name — they roll into the
-    // residual "Private / other" line (which the calendar already includes).
-    if (entry.repository?.isPrivate) continue;
-
-    publicRepos.push({ name: entry.repository?.name ?? 'unknown', total: t, daily });
+    repos.push({ name: entry.repository?.name ?? 'unknown', total: t, daily });
     for (const [d, n] of Object.entries(daily)) publicDailyTotal[d] = (publicDailyTotal[d] ?? 0) + n;
   }
+  return { repos, publicDailyTotal };
+}
 
+export async function getContributionSeries(): Promise<ContribData | null> {
+  if (!TOKEN) {
+    console.warn('[github] no GITHUB_TOKEN set — skipping line graph (heatmap fallback).');
+    return null;
+  }
+
+  // --- public profile calendar: daily totals incl. anonymized private ---
+  const cont = await fetch(
+    `https://github-contributions-api.jogruber.de/v4/${USER}?y=last`
+  ).then((r) => {
+    if (!r.ok) throw new Error('contrib ' + r.status);
+    return r.json();
+  });
+  const calDays: { date: string; count: number }[] = cont.contributions ?? [];
+  if (!calDays.length) throw new Error('github: empty contribution calendar');
+
+  const calendarDaily: Record<string, number> = {};
+  for (const d of calDays) calendarDaily[d.date] = d.count;
+  const total: number = cont.total?.lastYear ?? calDays.reduce((a, d) => a + d.count, 0);
+  const from = calDays[0].date;
+  const to = calDays[calDays.length - 1].date;
+
+  // --- public per-repo commit lines (token) ---
+  const { repos: publicRepos, publicDailyTotal } = await fetchPublicRepos(
+    new Date(from + 'T00:00:00Z'),
+    new Date(to + 'T23:59:59Z')
+  );
   publicRepos.sort((a, b) => b.total - a.total);
 
   const named = publicRepos.slice(0, MAX_NAMED_REPOS);
@@ -169,8 +168,7 @@ export async function getContributionSeries(): Promise<ContribData | null> {
     series.push({ name: OTHER_LABEL, isPrivate: false, color: COLOR_MAP[OTHER_LABEL], total: t, daily });
   }
 
-  // "Private / other" = calendar daily total − attributed public commits.
-  // Captures private activity + non-commit contributions; clamps at 0.
+  // "Private / other" = public-profile daily total − attributed public commits.
   const privateDaily: Record<string, number> = {};
   let privateTotal = 0;
   for (const [day, cTotal] of Object.entries(calendarDaily)) {
@@ -191,16 +189,14 @@ export async function getContributionSeries(): Promise<ContribData | null> {
   }
 
   console.warn(
-    `[github] total=${total} restricted=${restricted} publicRepos=${publicRepos.length} ` +
-    `privateOtherTotal=${privateTotal} (if private looks missing, the PAT needs classic repo+read:user scope)`
+    `[github] total=${total} publicRepos=${publicRepos.length} privateOtherTotal=${privateTotal}`
   );
 
-  const iso = (d: Date) => d.toISOString().slice(0, 10);
   return {
     series,
     total,
-    from: iso(from),
-    to: iso(to),
+    from,
+    to,
     generatedAt: new Date().toISOString(),
   };
 }
