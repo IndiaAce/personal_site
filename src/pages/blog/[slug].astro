@@ -1,0 +1,207 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getSubstackPosts } from '../../lib/substack';
+import type { Post } from '../../data/posts';
+
+// One statically-generated reader page per Substack post.
+export async function getStaticPaths() {
+  const posts = await getSubstackPosts();
+  return posts.map((post) => ({ params: { slug: post.slug! }, props: { post } }));
+}
+
+interface Props {
+  post: Post;
+}
+const { post } = Astro.props;
+---
+
+<Base title={`${post.title} — Luke Wescott`} description={post.excerpt}>
+  <article class="post wrap">
+    <a class="post__back" href="/blog">← All writing</a>
+
+    <div class="post__meta">
+      <span>{post.tag}</span>
+      <span>{post.date}</span>
+    </div>
+    <h1 class="post__title">{post.title}</h1>
+
+    {
+      post.external && (
+        <a
+          class="post__src"
+          href={post.external}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Read on Substack ↗
+        </a>
+      )
+    }
+
+    <div class="post__body" set:html={post.contentHtml} />
+
+    {
+      post.external && (
+        <div class="post__foot">
+          <p>Originally published on Substack.</p>
+          <a
+            class="btn btn--solid"
+            href={post.external}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Read on Substack ↗
+          </a>
+        </div>
+      )
+    }
+  </article>
+</Base>
+
+<style>
+  .post { padding: 54px 0 90px; max-width: 760px; }
+
+  .post__back {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    text-decoration: none;
+  }
+  .post__back:hover { color: var(--accent); }
+
+  .post__meta {
+    display: flex;
+    gap: 16px;
+    margin: 30px 0 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .post__title {
+    font-size: clamp(34px, 5.4vw, 60px);
+    line-height: 1.02;
+    margin: 0 0 18px;
+  }
+
+  .post__src {
+    display: inline-block;
+    margin-bottom: 38px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  .post__src:hover { border-bottom-color: var(--accent); }
+
+  /* ---- inline article body (Substack HTML) ---- */
+  .post__body {
+    font-size: 18px;
+    line-height: 1.7;
+    color: var(--ink);
+  }
+  .post__body :global(p) { margin: 0 0 22px; }
+  .post__body :global(h1),
+  .post__body :global(h2),
+  .post__body :global(h3),
+  .post__body :global(h4) {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    margin: 44px 0 16px;
+  }
+  .post__body :global(h2) { font-size: clamp(26px, 3.6vw, 34px); }
+  .post__body :global(h3) { font-size: clamp(21px, 2.8vw, 26px); }
+  .post__body :global(a) {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .post__body :global(strong) { color: var(--ink); font-weight: 700; }
+  .post__body :global(em) { font-style: italic; }
+
+  .post__body :global(img) {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 12px auto;
+    border: 1px solid var(--line);
+  }
+  .post__body :global(figure) { margin: 30px 0; }
+  .post__body :global(figcaption) {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  .post__body :global(blockquote) {
+    margin: 26px 0;
+    padding: 6px 0 6px 22px;
+    border-left: 3px solid var(--accent);
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  .post__body :global(ul),
+  .post__body :global(ol) { margin: 0 0 22px; padding-left: 24px; }
+  .post__body :global(li) { margin: 0 0 10px; }
+
+  .post__body :global(hr) {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 40px 0;
+  }
+
+  .post__body :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 1px 5px;
+  }
+  .post__body :global(pre) {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    margin: 0 0 22px;
+  }
+  .post__body :global(pre code) {
+    background: none;
+    border: 0;
+    padding: 0;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+
+  /* Substack wraps each post in a subscribe/CTA widget set — hide the noisiest */
+  .post__body :global(.subscription-widget-wrap),
+  .post__body :global(.subscribe-widget),
+  .post__body :global(.button-wrapper) { display: none; }
+
+  .post__foot {
+    margin-top: 56px;
+    padding-top: 28px;
+    border-top: var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .post__foot p {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+</style>

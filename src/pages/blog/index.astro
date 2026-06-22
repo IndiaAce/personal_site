@@ -1,57 +1,151 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { posts } from '../../data/posts';
+import { getPosts, type Post } from '../../lib/posts';
+
+const posts = await getPosts();
+
+// Two streams within Writing: fiction is everything tagged FICTION
+// (Substack slug starts with `fic-`); technical is everything else.
+const fiction = posts.filter((p) => p.tag === 'FICTION');
+const technical = posts.filter((p) => p.tag !== 'FICTION');
+
+const hrefFor = (p: Post) => (p.kind === 'external' ? p.external : `/blog/${p.slug}`);
 ---
 
 <Base title="Writing — Luke Wescott">
-  <section class="bl wrap">
+  <section class="bl wrap desktop-only">
     <div class="bl__head">
       <div class="kicker">WRITING / NOTES</div>
       <h1 class="bl__title">Detections, written like prose.</h1>
       <p class="bl__lede">
         Field notes on detection engineering, machine learning, and the craft of
-        finding what hides in the noise. Most pieces are published on the
-        Sublime Security blog.
+        finding what hides in the noise — plus short fiction away from the terminal.
       </p>
     </div>
 
-    <div class="label-head">SELECTED — RECENT</div>
-    <div class="bl__list">
+    <div class="bl__tabs" role="tablist" aria-label="Writing categories">
+      <button class="bl__tab bl__tab--on" role="tab" id="tab-technical" aria-controls="panel-technical" aria-selected="true" data-panel="technical">
+        Technical <span class="bl__tab-n">{technical.length}</span>
+      </button>
+      <button class="bl__tab" role="tab" id="tab-fiction" aria-controls="panel-fiction" aria-selected="false" data-panel="fiction">
+        Fiction <span class="bl__tab-n">{fiction.length}</span>
+      </button>
+    </div>
+
+    <div class="bl__panel" id="panel-technical" role="tabpanel" aria-labelledby="tab-technical">
+      <div class="label-head">SELECTED — RECENT</div>
+      <div class="bl__list">
+        {
+          technical.map((p) => {
+            const ext = p.kind === 'external';
+            return (
+              <a
+                class="bl__post"
+                href={hrefFor(p)}
+                target={ext ? '_blank' : null}
+                rel={ext ? 'noopener noreferrer' : null}
+                data-target={p.tag}
+              >
+                <div class="bl__post-meta">
+                  <span>{p.tag}</span>
+                  <span>{p.date}</span>
+                </div>
+                <div class="bl__post-title">{p.title}</div>
+                <p class="bl__post-excerpt">{p.excerpt}</p>
+                <div class="bl__post-read">{ext ? `${p.source} ↗` : 'Read →'}</div>
+              </a>
+            );
+          })
+        }
+      </div>
+    </div>
+
+    <div class="bl__panel" id="panel-fiction" role="tabpanel" aria-labelledby="tab-fiction" hidden>
+      <div class="label-head">SELECTED — RECENT</div>
       {
-        posts.map((p) => {
-          const href = p.external ?? `/blog/${p.slug}`;
-          const ext = Boolean(p.external);
-          return (
-            <a
-              class="bl__post"
-              href={href}
-              target={ext ? '_blank' : null}
-              rel={ext ? 'noopener noreferrer' : null}
-              data-target={p.tag}
-            >
-              <div class="bl__post-meta">
-                <span>{p.tag}</span>
-                <span>{p.date}</span>
-              </div>
-              <div class="bl__post-title">{p.title}</div>
-              <p class="bl__post-excerpt">{p.excerpt}</p>
-              <div class="bl__post-read">
-                {ext ? `${p.source} ↗` : 'Read →'}
-              </div>
-            </a>
-          );
-        })
+        fiction.length ? (
+          <div class="bl__list">
+            {fiction.map((p) => (
+              <a class="bl__post" href={hrefFor(p)} data-target={p.tag}>
+                <div class="bl__post-meta">
+                  <span>{p.tag}</span>
+                  <span>{p.date}</span>
+                </div>
+                <div class="bl__post-title">{p.title}</div>
+                <p class="bl__post-excerpt">{p.excerpt}</p>
+                <div class="bl__post-read">Read →</div>
+              </a>
+            ))}
+          </div>
+        ) : (
+          <div class="bl__soon" data-target="Fiction">
+            <div class="bl__soon-tag">COMING SOON</div>
+            <p class="bl__soon-copy">
+              Short fiction is in progress — stories away from the terminal. Check back soon.
+            </p>
+          </div>
+        )
       }
     </div>
-
-    <div class="label-head bl__fiction-head">FICTION</div>
-    <div class="bl__soon" data-target="Fiction">
-      <div class="bl__soon-tag">COMING SOON</div>
-      <p class="bl__soon-copy">
-        Short fiction is in progress — stories away from the terminal. Check back soon.
-      </p>
-    </div>
   </section>
+
+  <!-- mobile: Paper writing list -->
+  <section class="m-section mw">
+    <div class="mw__kicker">WRITING / NOTES</div>
+    <h1 class="mw__title">Detections, written like prose.</h1>
+    <p class="mw__lede">
+      Field notes on detection engineering, machine learning, and the craft of
+      finding what hides in the noise. Most pieces are published on the Sublime Security blog.
+    </p>
+    <div class="mw__label">SELECTED — RECENT</div>
+    {
+      technical.map((p) => {
+        const ext = p.kind === 'external';
+        return (
+          <a
+            class="mw__post"
+            href={hrefFor(p)}
+            target={ext ? '_blank' : null}
+            rel={ext ? 'noopener noreferrer' : null}
+          >
+            <div class="mw__post-meta">
+              <span class="mw__post-tag">{p.tag}</span>
+              <span>{p.date}</span>
+            </div>
+            <div class="mw__post-title">{p.title}</div>
+            <p class="mw__post-excerpt">{p.excerpt}</p>
+            <div class="mw__post-read">{ext ? `${p.source} ↗` : 'Read →'}</div>
+          </a>
+        );
+      })
+    }
+  </section>
+
+  <script is:inline>
+    (function () {
+      var tabs = Array.prototype.slice.call(document.querySelectorAll('.bl__tab'));
+      if (!tabs.length) return;
+
+      function activate(name, push) {
+        tabs.forEach(function (t) {
+          var on = t.getAttribute('data-panel') === name;
+          t.classList.toggle('bl__tab--on', on);
+          t.setAttribute('aria-selected', on ? 'true' : 'false');
+          var panel = document.getElementById('panel-' + t.getAttribute('data-panel'));
+          if (panel) panel.hidden = !on;
+        });
+        if (push && history.replaceState) {
+          history.replaceState(null, '', name === 'fiction' ? '#fiction' : location.pathname);
+        }
+      }
+
+      tabs.forEach(function (t) {
+        t.addEventListener('click', function () { activate(t.getAttribute('data-panel'), true); });
+      });
+
+      if (location.hash === '#fiction') activate('fiction', false);
+    })();
+  </script>
 </Base>
 
 <style>
@@ -112,7 +206,45 @@ import { posts } from '../../data/posts';
     letter-spacing: .06em;
   }
 
-  .bl__fiction-head { margin-top: 56px; }
+  /* sub-tabs: Technical / Fiction */
+  .bl__tabs {
+    display: flex;
+    gap: 0;
+    border: var(--border);
+    width: max-content;
+    max-width: 100%;
+    margin-bottom: 30px;
+  }
+  .bl__tab {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: transparent;
+    border: 0;
+    border-right: var(--border);
+    padding: 13px 22px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    transition: background .15s, color .15s;
+  }
+  .bl__tab:last-child { border-right: 0; }
+  .bl__tab:hover { background: var(--bg-elev); }
+  .bl__tab--on { background: var(--accent); color: var(--bg); }
+  .bl__tab-n {
+    font-size: 10px;
+    opacity: .65;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    padding: 1px 6px;
+    line-height: 1.4;
+  }
+  .bl__panel[hidden] { display: none; }
+  .bl__panel { animation: rise .35s ease both; }
+
   .bl__soon {
     border: 1px dashed var(--line);
     padding: 26px;
@@ -132,5 +264,74 @@ import { posts } from '../../data/posts';
     color: var(--ink-soft);
     margin: 0;
     max-width: 620px;
+  }
+
+  /* ---- mobile Paper writing ---- */
+  .mw__kicker {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .24em;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .mw__title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 40px;
+    line-height: .96;
+    letter-spacing: -.02em;
+    margin: 0;
+    color: var(--ink);
+  }
+  .mw__lede {
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin: 16px 0 0;
+  }
+  .mw__label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .2em;
+    color: var(--muted);
+    margin: 26px 0 4px;
+  }
+  .mw__post {
+    display: block;
+    text-decoration: none;
+    color: var(--ink);
+    padding: 20px 0;
+    border-top: 1px solid var(--line);
+  }
+  .mw__post-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .mw__post-tag { color: var(--accent); }
+  .mw__post-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 22px;
+    line-height: 1.14;
+    color: var(--ink);
+  }
+  .mw__post-excerpt {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin: 9px 0 0;
+  }
+  .mw__post-read {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    margin-top: 11px;
   }
 </style>

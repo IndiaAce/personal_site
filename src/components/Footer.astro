@@ -45,11 +45,15 @@
   .ftr__col a { color: var(--accent); text-decoration: none; }
   .ftr__col a:hover { text-decoration: underline; }
 
-  @media (max-width: 560px) {
+  /* mobile (≤720px): centered stacked lines, sits above the bottom tab bar */
+  @media (max-width: 720px) {
     .ftr {
       flex-direction: column;
       align-items: center;
       gap: 14px;
+      padding: 26px 22px 24px;
+      font-size: 10.5px;
+      letter-spacing: .16em;
     }
   }
 </style>

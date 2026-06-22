@@ -21,6 +21,10 @@ let repoCount = 0;
 let repos: { name: string; desc: string; lang: string; stars: number; url: string }[] = [];
 let usingRealData = false;
 
+// Monthly commit rhythm (portrait-native chart on mobile) — last 12 months.
+let months: { label: string; count: number }[] = [];
+const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 try {
   // --- contribution calendar ---
   const cont = await fetch(
@@ -36,6 +40,19 @@ try {
   let run = 0;
   for (const d of days) {
     if (d.count > 0) { run++; streak = Math.max(streak, run); } else run = 0;
+  }
+
+  // bucket daily counts into the last 12 calendar months
+  const bucket: Record<string, number> = {};
+  for (const d of days) {
+    const key = d.date.slice(0, 7); // 'YYYY-MM'
+    bucket[key] = (bucket[key] ?? 0) + d.count;
+  }
+  const last = new Date(days[days.length - 1].date + 'T00:00:00Z');
+  for (let i = 11; i >= 0; i--) {
+    const dt = new Date(Date.UTC(last.getUTCFullYear(), last.getUTCMonth() - i, 1));
+    const key = `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}`;
+    months.push({ label: MONTH_LABELS[dt.getUTCMonth()], count: bucket[key] ?? 0 });
   }
 
   // grid: 7 rows (Sun→Sat), pad the first column to the first date's weekday
@@ -92,6 +109,10 @@ try {
   }
   streak = 47;
   repoCount = 30;
+  months = [62, 70, 58, 66, 88, 74, 96, 120, 138, 196, 240, 210].map((count, i) => ({
+    label: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][i],
+    count,
+  }));
   repos = [
     { name: 'sigma-tuner', desc: 'Auto-tunes detection thresholds against historical alert volume.', lang: 'Python', stars: 0, url: 'https://github.com/IndiaAce' },
     { name: 'embed-hunt', desc: 'Semantic search over threat intel using sentence embeddings.', lang: 'Python', stars: 0, url: 'https://github.com/IndiaAce' },
@@ -118,10 +139,17 @@ const stats = [
 ];
 
 const legend = [0, 1, 2, 3, 4];
+
+// monthly chart scaling + headline month (mobile rhythm chart)
+const monthMax = Math.max(1, ...months.map((m) => m.count));
+const peak = months.reduce(
+  (a, m) => (m.count > a.count ? m : a),
+  months[0] ?? { label: '', count: 0 }
+);
 ---
 
 <Base title="GitHub — Luke Wescott">
-  <section class="gh wrap">
+  <section class="gh wrap desktop-only">
     <div class="gh__head">
       <div>
         <div class="kicker">INDIAACE</div>
@@ -207,6 +235,48 @@ const legend = [0, 1, 2, 3, 4];
     </div>
 
     <a class="gh__profile" href={`https://github.com/${USER}`} target="_blank" rel="noopener noreferrer">
+      View full profile on GitHub →
+    </a>
+  </section>
+
+  <!-- mobile: Paper monthly commit rhythm -->
+  <section class="m-section mg">
+    <div class="mg__kicker">@INDIAACE</div>
+    <h1 class="mg__title">A year in commits</h1>
+
+    <div class="mg__stats">
+      {
+        stats.map((s) => (
+          <div class="mg__stat">
+            <div class="mg__stat-n">{s.n}</div>
+            <div class="mg__stat-l">{s.l}</div>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="mg__label">COMMITS BY MONTH · LAST 12</div>
+    <div class="mg__panel">
+      {
+        months.map((m, i) => (
+          <div class="mg__row">
+            <div class="mg__month">{m.label}</div>
+            <div class="mg__track">
+              <div
+                class="mg__bar"
+                style={`width:${((m.count / monthMax) * 100).toFixed(1)}%;background:${i >= months.length - 3 ? 'var(--accent)' : 'var(--accent-soft)'}`}
+              />
+            </div>
+            <div class="mg__count">{m.count}</div>
+          </div>
+        ))
+      }
+    </div>
+    {peak.count > 0 && (
+      <div class="mg__cap">{peak.label} was the heaviest build month of the year.</div>
+    )}
+
+    <a class="gh__profile mg__profile" href={`https://github.com/${USER}`} target="_blank" rel="noopener noreferrer">
       View full profile on GitHub →
     </a>
   </section>
@@ -512,4 +582,89 @@ const legend = [0, 1, 2, 3, 4];
   @media (max-width: 860px) {
     .gh__repos { grid-template-columns: 1fr; }
   }
+
+  /* ---- mobile Paper monthly rhythm ---- */
+  .mg__kicker {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .24em;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .mg__title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 40px;
+    line-height: .96;
+    letter-spacing: -.02em;
+    margin: 0;
+    color: var(--ink);
+  }
+  .mg__stats { display: flex; gap: 10px; margin: 22px 0 4px; }
+  .mg__stat {
+    flex: 1;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 12px;
+    background: var(--bg-elev);
+  }
+  .mg__stat-n {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .mg__stat-l {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: .06em;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  .mg__label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .16em;
+    color: var(--muted);
+    margin: 24px 0 6px;
+  }
+  .mg__panel {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--bg-elev);
+    padding: 16px 16px 8px;
+  }
+  .mg__row { display: flex; align-items: center; gap: 12px; padding: 7px 0; }
+  .mg__month {
+    width: 34px;
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .mg__track {
+    flex: 1;
+    height: 14px;
+    border-radius: 5px;
+    background: var(--inset);
+    overflow: hidden;
+  }
+  .mg__bar { height: 100%; border-radius: 5px; }
+  .mg__count {
+    width: 30px;
+    flex: none;
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink);
+  }
+  .mg__cap {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--muted);
+    margin-top: 12px;
+    text-align: center;
+  }
+  .mg__profile { margin-top: 20px; }
 </style>

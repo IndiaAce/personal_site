@@ -68,7 +68,7 @@ try {
 ---
 
 <Base title="Now — Luke Wescott">
-  <section class="now wrap">
+  <section class="now wrap desktop-only">
     <div class="now__kicker">
       04 — NOW <span class="now__updated">· UPDATED {updated}</span>
     </div>
@@ -98,6 +98,51 @@ try {
                 target="_blank"
                 rel="noopener noreferrer"
               >
+                {nowPlaying.art && (
+                  <img class="np__art" src={nowPlaying.art} alt="" width="64" height="64" />
+                )}
+                <span class="np__body">
+                  <span class="np__label">CURRENTLY LISTENING TO:</span>
+                  <span class="np__title">{nowPlaying.title}</span>
+                  <span class="np__bar">
+                    <span class="np__fill" style={`width:${(nowPlaying.pct * 100).toFixed(1)}%`} />
+                  </span>
+                  <span class="np__time">
+                    <span>{nowPlaying.elapsed}</span>
+                    <span>{nowPlaying.duration}</span>
+                  </span>
+                </span>
+              </a>
+            ) : (
+              <a class="np np--bare" href={SPOTIFY_TRACK_URL} target="_blank" rel="noopener noreferrer">
+                Open current track on Spotify ↗
+              </a>
+            )
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- mobile: Paper now -->
+  <section class="m-section mn">
+    <div class="mn__kicker">NOW · UPDATED {updated}</div>
+    <h1 class="mn__title">What I'm doing now</h1>
+    <div class="mn__list">
+      {
+        nowItems.map((i) => (
+          <div class="mn__row">
+            <div class="mn__k">{i.k}</div>
+            <div class="mn__v">{i.v}</div>
+          </div>
+        ))
+      }
+      <div class="mn__row">
+        <div class="mn__k">LISTENING</div>
+        <div class="mn__v">
+          {
+            nowPlaying ? (
+              <a class="np" href={nowPlaying.url} target="_blank" rel="noopener noreferrer">
                 {nowPlaying.art && (
                   <img class="np__art" src={nowPlaying.art} alt="" width="64" height="64" />
                 )}
@@ -245,4 +290,33 @@ try {
   @media (max-width: 600px) {
     .now__row { grid-template-columns: 1fr; gap: 8px; }
   }
+
+  /* ---- mobile Paper now ---- */
+  .mn__kicker {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .24em;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .mn__title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 40px;
+    line-height: .96;
+    letter-spacing: -.02em;
+    margin: 0;
+    color: var(--ink);
+  }
+  .mn__list { margin-top: 22px; }
+  .mn__row { padding: 18px 0; border-top: 1px solid var(--line); }
+  .mn__row:last-child { border-bottom: 1px solid var(--line); }
+  .mn__k {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .14em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .mn__v { font-size: 16.5px; line-height: 1.5; color: var(--ink); }
 </style>

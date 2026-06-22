@@ -1,0 +1,32 @@
+# Daily rebuild so new Substack posts go live without a manual deploy.
+#
+# The site is statically built, so a new post only appears when Cloudflare Pages
+# rebuilds. This pings a Cloudflare "Deploy hook" once a day (and on demand).
+#
+# One-time setup:
+#   1. Cloudflare Pages → your project → Settings → Builds & deployments →
+#      Deploy hooks → "Add deploy hook" (branch: main). Copy the URL.
+#   2. GitHub repo → Settings → Secrets and variables → Actions → New repository
+#      secret → name: CF_DEPLOY_HOOK, value: <the URL from step 1>.
+#
+# That's it — publish on Substack and the post is live within ~24h, or instantly
+# via Actions → "Daily rebuild" → Run workflow.
+name: Daily rebuild
+
+on:
+  schedule:
+    - cron: '0 13 * * *' # 13:00 UTC daily (~6–9am PT depending on DST)
+  workflow_dispatch: {} # manual "Run workflow" button
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Cloudflare Pages deploy
+        run: |
+          if [ -z "${{ secrets.CF_DEPLOY_HOOK }}" ]; then
+            echo "CF_DEPLOY_HOOK secret is not set — skipping. See this file's header for setup."
+            exit 0
+          fi
+          curl -fsS -X POST "${{ secrets.CF_DEPLOY_HOOK }}"
+          echo "Deploy hook triggered."

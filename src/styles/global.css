@@ -18,6 +18,11 @@
   --glass: rgba(255, 255, 255, .5);
   --glass-line: rgba(255, 255, 255, .75);
 
+  /* paper (mobile) extras */
+  --muted: #8a877c;       /* mono captions / keys */
+  --inset: #e3e1d8;       /* empty bar track */
+  --accent-soft: #6f6ad6; /* older-month bars */
+
   /* contribution heatmap (light) */
   --heat-0: #d7d7e8;
   --heat-1: #b3b4f0;
@@ -43,6 +48,10 @@
   --accent-live: #c8f135;
   --glass: rgba(255, 255, 255, .05);
   --glass-line: rgba(255, 255, 255, .12);
+
+  --muted: #888b94;
+  --inset: #23262f;
+  --accent-soft: #7e87ff;
 
   --heat-0: #181b25;
   --heat-1: #2a2f5c;
@@ -186,6 +195,25 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 800; letter-spacing:
   padding-bottom: 10px;
   margin-bottom: 16px;
   text-transform: uppercase;
+}
+
+/* ---- mobile "Paper" takeover (≤720px) ---- */
+@keyframes aSlide { from { transform: translateY(10px); } to { transform: translateY(0); } }
+
+/* desktop content visible by default; Paper blocks hidden until mobile */
+.mobile-only { display: none; }
+.m-section { display: none; }
+
+@media (max-width: 720px) {
+  .desktop-only { display: none !important; }
+  .mobile-only { display: block; }
+  .m-section {
+    display: block;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 22px 22px 34px;
+    animation: aSlide .4s ease both;
+  }
 }
 
 /* reduced motion */

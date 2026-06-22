@@ -24,6 +24,14 @@ const navLinks = [
 const path = Astro.url.pathname;
 const isActive = (href: string) =>
   href === '/' ? path === '/' : path.startsWith(href);
+
+// Mobile "Paper" bottom tab bar — four real routes (/, /blog, /github, /now).
+const mobileTabs = [
+  { href: '/', label: 'Résumé' },
+  { href: '/blog', label: 'Writing' },
+  { href: '/github', label: 'GitHub' },
+  { href: '/now', label: 'Now' },
+];
 ---
 
 <!DOCTYPE html>
@@ -71,6 +79,21 @@ const isActive = (href: string) =>
       </div>
     </div>
 
+    <!-- mobile "Paper" header (≤720px) -->
+    <header class="m-hdr">
+      <a class="m-hdr__brand" href="/">LW<span class="accent">.</span></a>
+      <div class="m-hdr__right">
+        <span class="m-hdr__role">DE · <span>SUBLIME</span></span>
+        <button
+          class="m-hdr__theme"
+          data-theme-toggle
+          aria-label="Toggle color theme"
+        >
+          <span data-theme-icon>☾</span>
+        </button>
+      </div>
+    </header>
+
     <Header navLinks={navLinks} isActive={isActive} />
 
     <main>
@@ -78,6 +101,21 @@ const isActive = (href: string) =>
     </main>
 
     <Footer />
+
+    <!-- mobile "Paper" bottom tab bar (≤720px) -->
+    <nav class="m-tabbar" aria-label="Primary">
+      {
+        mobileTabs.map((t) => (
+          <a
+            class:list={['m-tab', { 'm-tab--on': isActive(t.href) }]}
+            href={t.href}
+          >
+            <span class="m-tab__bar" />
+            <span class="m-tab__label">{t.label}</span>
+          </a>
+        ))
+      }
+    </nav>
 
     <!-- Full-screen brutalist overlay nav (mobile) -->
     <div class="overlay" id="overlay" aria-hidden="true">
@@ -222,6 +260,87 @@ const isActive = (href: string) =>
     </script>
 
     <style>
+      /* ---- mobile "Paper" chrome (header + bottom tab bar), ≤720px ---- */
+      .m-hdr, .m-tabbar { display: none; }
+
+      @media (max-width: 720px) {
+        .m-hdr {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 14px;
+          position: sticky;
+          top: 0;
+          z-index: 40;
+          padding: 18px 22px 14px;
+          background: var(--bg);
+          background: color-mix(in srgb, var(--bg) 86%, transparent);
+          -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(12px);
+          border-bottom: 1px solid var(--line);
+        }
+        .m-hdr__brand {
+          font-family: var(--font-display);
+          font-weight: 800;
+          font-size: 22px;
+          letter-spacing: -.01em;
+          color: var(--ink);
+          text-decoration: none;
+        }
+        .m-hdr__right { display: flex; align-items: center; gap: 12px; }
+        .m-hdr__role {
+          font-family: var(--font-mono);
+          font-size: 10.5px;
+          letter-spacing: .16em;
+          color: var(--muted);
+        }
+        .m-hdr__role span { color: var(--ink); }
+        .m-hdr__theme {
+          background: none;
+          border: 0;
+          padding: 4px;
+          cursor: pointer;
+          color: var(--ink);
+          font-size: 15px;
+          line-height: 1;
+        }
+
+        .m-tabbar {
+          display: flex;
+          position: sticky;
+          bottom: 0;
+          z-index: 50;
+          background: var(--bg);
+          background: color-mix(in srgb, var(--bg) 92%, transparent);
+          -webkit-backdrop-filter: blur(14px);
+          backdrop-filter: blur(14px);
+          border-top: 1px solid var(--line);
+          padding: 10px 8px calc(16px + env(safe-area-inset-bottom));
+        }
+        .m-tab {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+          padding: 4px 0;
+          text-decoration: none;
+          font-family: var(--font-body);
+          font-size: 11px;
+          font-weight: 500;
+          letter-spacing: .01em;
+          color: var(--muted);
+        }
+        .m-tab__bar {
+          width: 18px;
+          height: 3px;
+          border-radius: 3px;
+          background: transparent;
+        }
+        .m-tab--on { color: var(--accent); font-weight: 700; }
+        .m-tab--on .m-tab__bar { background: var(--accent); }
+      }
+
       /* ---- reticle / scope layer ---- */
       :root { --rx: 50%; --ry: 50%; }
 
