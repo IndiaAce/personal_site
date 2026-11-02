@@ -1,4 +1,5 @@
 ---
+import Media from '../components/Media.astro';
 import Base from '../layouts/Base.astro';
 import { meta, experience, education, certs, skills, work, intro } from '../data/profile';
 ---
@@ -9,10 +10,10 @@ import { meta, experience, education, certs, skills, work, intro } from '../data
       <aside class="rs__side">
         <div class="rs__photo" data-target="Portrait">
           <img
-            src="/assets/luke.jpg"
+            src="/assets/luke-portrait.jpg"
             alt="Luke Wescott"
-            width="1077"
-            height="709"
+            width="360"
+            height="360"
             loading="eager"
             decoding="async"
           />
@@ -84,6 +85,8 @@ import { meta, experience, education, certs, skills, work, intro } from '../data
             ))
           }
         </ul>
+
+        <Media />
 
         <div class="rs__cols">
           <div>
@@ -167,22 +170,35 @@ import { meta, experience, education, certs, skills, work, intro } from '../data
   .rs__photo {
     position: relative;
     overflow: hidden;
-    border: var(--border);
-    aspect-ratio: 1077 / 709;
+    aspect-ratio: 1 / 1;
+    max-width: 340px;
+    -webkit-mask-image: radial-gradient(circle closest-side, #000 62%, transparent 98%);
+    mask-image: radial-gradient(circle closest-side, #000 62%, transparent 98%);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    animation: rs-photo-in .9s ease both;
   }
   .rs__photo img {
     width: 100%;
     height: 100%;
     display: block;
     object-fit: cover;
-    filter: grayscale(1) contrast(1.04);
+    /* zoom past the source art's black corners so only the circle shows */
+    transform: scale(1.05);
+    filter: grayscale(.55) contrast(1.06);
   }
   .rs__photo-tint {
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, transparent 78%, var(--accent));
+    background: radial-gradient(circle at 50% 42%, transparent 55%, var(--accent));
     mix-blend-mode: multiply;
-    opacity: .2;
+    opacity: .16;
+  }
+  @keyframes rs-photo-in {
+    from { opacity: 0; transform: scale(.97); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rs__photo { animation: none; }
   }
   .rs__meta { margin-top: 22px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); }
   .rs__meta-row {

@@ -1,5 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
+import Media from '../components/Media.astro';
+import { manualPosts } from '../data/posts';
 import Marquee from '../components/Marquee.astro';
 import { meta, experience, education, skills, intro } from '../data/profile';
 
@@ -20,11 +22,12 @@ const mobileRoles = experience.slice(0, 2);
   <!-- desktop: brutalist hero + tile nav -->
   <div class="desktop-only">
     <section class="home wrap">
+      <img class="home__portrait" src="/assets/luke-portrait.jpg" alt="Luke Wescott" width="360" height="360" decoding="async" />
       <h1 class="home__name">Luke<br />Wescott<span class="accent">.</span></h1>
 
       <p class="home__lede">
-        Threat Detection Engineer at <span class="home__lede-em">Sublime Security</span>.
-        I build a blend of ML and detection tools to help prevent bad guys from sending malicious email.
+        Detection Engineer II at <span class="home__lede-em">Sublime Security</span>.
+        I turn interpretable signals into better email security verdicts, and research prompt injection, calendar phishing, and AI-generated attacks.
       </p>
 
       <div class="home__nav">
@@ -45,7 +48,7 @@ const mobileRoles = experience.slice(0, 2);
   <!-- mobile: Paper "living résumé" -->
   <section class="m-section mr">
     <div class="mr__photo">
-      <img src="/assets/luke.jpg" alt="Luke Wescott" width="1077" height="709" loading="eager" decoding="async" />
+      <img src="/assets/luke-portrait.jpg" alt="Luke Wescott" width="360" height="360" loading="eager" decoding="async" />
       <div class="mr__photo-tint"></div>
     </div>
 
@@ -100,9 +103,31 @@ const mobileRoles = experience.slice(0, 2);
 
     <a class="mr__full" href="/resume">Full résumé →</a>
   </section>
+  <section class="latest wrap" aria-label="Latest research and public appearances">
+    <h2 class="label-head">LATEST RESEARCH</h2>
+    <div class="latest__list">
+      {manualPosts.slice(0, 3).map((post) => (
+        <a href={post.external} target="_blank" rel="noopener noreferrer" data-target={post.tag}>
+          <span>{post.date} · {post.tag}</span><h3>{post.title} ↗</h3><p>{post.excerpt}</p>
+        </a>
+      ))}
+    </div>
+    <a class="latest__all" href="/blog">All writing →</a>
+    <Media />
+  </section>
 </Base>
 
 <style>
+  .home__portrait { float: right; width: clamp(180px, 24vw, 300px); height: auto; margin: 0 0 24px 32px; border-radius: 50%; }
+  .latest { padding-top: 32px; padding-bottom: 40px; }
+  .latest__list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+  .latest__list a { color: var(--ink); text-decoration: none; border-top: 1px solid var(--line); padding-top: 16px; }
+  .latest__list span, .latest__all { font: 11px/1.6 var(--font-mono); color: var(--accent); }
+  .latest__list h3 { font-size: 21px; line-height: 1.3; }
+  .latest__list p { font-size: 15px; line-height: 1.6; color: var(--ink-soft); }
+  .latest__list a:hover h3 { color: var(--accent); }
+  .latest__all { display: inline-block; margin-top: 20px; }
+  @media (max-width: 760px) { .latest__list { grid-template-columns: 1fr; } }
   .home {
     padding: 7vh 0 9vh;
     animation: rise .5s ease both;
@@ -152,7 +177,7 @@ const mobileRoles = experience.slice(0, 2);
     overflow: hidden;
     border: 1px solid var(--line);
     border-radius: 14px;
-    aspect-ratio: 1077 / 709;
+    aspect-ratio: 1 / 1;
   }
   .mr__photo img {
     width: 100%;

@@ -1,0 +1,25 @@
+---
+import { media } from '../data/media';
+---
+<section class="media" aria-label="Media and interviews">
+  <h2 class="label-head">MEDIA &amp; INTERVIEWS</h2>
+  <div class="media__list">
+    {media.map((item) => (
+      <a class="media__item" href={item.href} target="_blank" rel="noopener noreferrer" data-target={item.source}>
+        <div class="media__meta"><span>{item.source} · {item.kind}</span><time datetime={item.iso}>{item.date}</time></div>
+        <h3>{item.title} <span aria-hidden="true">↗</span></h3>
+        <p>{item.description}</p>
+      </a>
+    ))}
+  </div>
+</section>
+<style>
+  .media { margin: 38px 0; }
+  .media h2 { font-size: 12px; }
+  .media__list { border-top: 1px solid var(--line); }
+  .media__item { display: block; padding: 20px 0; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+  .media__meta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; font: 11px/1.6 var(--font-mono); color: var(--ink-soft); }
+  .media h3 { font-size: clamp(19px, 2.5vw, 26px); line-height: 1.25; margin: 9px 0; }
+  .media p { color: var(--ink-soft); font-size: 15px; line-height: 1.6; margin: 0; }
+  .media__item:hover h3, .media__item:focus-visible h3 { color: var(--accent); }
+</style>

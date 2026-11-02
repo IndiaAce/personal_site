@@ -1,4 +1,5 @@
 ---
+import Media from '../../components/Media.astro';
 import Base from '../../layouts/Base.astro';
 import { getPosts, type Post } from '../../lib/posts';
 
@@ -146,6 +147,7 @@ const hrefFor = (p: Post) => (p.kind === 'external' ? p.external : `/blog/${p.sl
       if (location.hash === '#fiction') activate('fiction', false);
     })();
   </script>
+  <div class="wrap"><Media /></div>
 </Base>
 
 <style>

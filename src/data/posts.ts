@@ -25,6 +25,37 @@ export interface Post {
 // Hand-maintained posts published on other platforms.
 export const manualPosts: Post[] = [
   {
+    "title": "Hiding attacks in plain sight with invisible Unicode tag characters",
+    "tag": "AI SECURITY",
+    "date": "Oct 2026",
+    "iso": "2026-10-14",
+    "excerpt": "How invisible Unicode tags hide adversarial instructions in email aimed at AI scanners and tools.",
+    "kind": "external",
+    "external": "https://sublime.security/blog/hiding-attacks-in-plain-sight-with-invisible-unicode-tag-characters/",
+    "source": "Sublime Security"
+  },
+  {
+    "title": "Calendar phishing attacks expanding across service providers",
+    "tag": "PHISHING",
+    "date": "Jul 2026",
+    "iso": "2026-07-09",
+    "excerpt": "Research into malicious calendar invitations sent through legitimate service providers.",
+    "kind": "external",
+    "external": "https://sublime.security/blog/calendar-phishing-attacks-expanding-across-service-providers/",
+    "source": "Sublime Security"
+  },
+  {
+    "title": "Surge in callback phishing attacks abusing auto notifications, verifications, alerts, receipts, and more",
+    "tag": "PHISHING",
+    "date": "Jun 2026",
+    "iso": "2026-06-17",
+    "excerpt": "How attackers embed callback lures in automated notifications from trusted services.",
+    "kind": "external",
+    "external": "https://sublime.security/blog/surge-in-callback-phishing-attacks-abusing-auto-notifications-verifications-alerts-receipts-and-more/",
+    "source": "Sublime Security"
+  },
+
+  {
     title: 'Prompt injection attacks don’t look like what you’re seeing in social media and headlines',
     tag: 'AI SECURITY',
     date: 'May 2026',

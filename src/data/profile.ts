@@ -1,3 +1,5 @@
+import { manualPosts } from './posts';
+
 // ============================================================
 // Single source of truth for résumé content.
 // Consumed by the desktop résumé page (src/pages/resume.astro) and the
@@ -8,13 +10,13 @@
 export const name = { first: 'Luke', last: 'Wescott' };
 
 export const intro =
-  'Detection Engineer specializing in ML-driven, detection-as-code systems — ' +
-  'designing and tuning the detections that catch real threats at global scale. ' +
+  'Detection Engineer II at Sublime Security, working across detection engineering and machine learning to turn interpretable signals into better email security verdicts. ' +
+  'I research prompt injection, calendar phishing, and AI-generated email artifacts. ' +
   'M.Sc in AI & Machine Learning. Off the clock: French lessons, hockey, books, and new music.';
 
 export type Fact = { k: string; v: string; href?: string };
 export const meta: Fact[] = [
-  { k: 'LOCATION', v: 'Vermont' },
+  { k: 'LOCATION', v: 'South Burlington, VT' },
   { k: 'LANGUAGES', v: 'EN · FR (B1)' },
   { k: 'GITHUB', v: 'IndiaAce', href: 'https://github.com/IndiaAce' },
   { k: 'LINKEDIN', v: 'in/luke-wescott', href: 'https://www.linkedin.com/in/luke-wescott-ba027a1ab/' },
@@ -38,6 +40,10 @@ export const experience: Role[] = [
     location: 'Remote',
     period: 'May 2025 — Present',
     bullets: [
+      {
+        short: 'Research prompt injection, Unicode tags, and calendar phishing',
+        detail: 'Investigate emerging email attacks and AI-generated artifacts, translating findings into detection hypotheses and technical publications.',
+      },
       {
         short: 'Bridge the ML and Detection Engineering teams',
         detail:
@@ -149,17 +155,15 @@ export const certs: string[] = [
 ];
 
 export const skills: string[] = [
-  'Python', 'Splunk / SPL', 'Detection-as-Code', 'GitOps · CI/CD',
+  'Python', 'MQL', 'Splunk / SPL', 'Detection-as-Code', 'GitOps · CI/CD',
   'Machine Learning', 'TensorFlow', 'Cloud Security (AWS·Azure·GCP)',
   'MITRE ATT&CK', 'Anomaly Detection', 'Email Analysis',
-  'Microsoft Sentinel', 'Linux',
+  'Microsoft Sentinel', 'Linux', 'ICS / Calendar Analysis', 'Prompt Injection', 'AI/ML Signal Design',
 ];
 
 export type Work = { title: string; where: string; href: string | null };
 export const work: Work[] = [
-  { title: '“Prompt injection attacks don’t look like the headlines”', where: 'Sublime Security ↗', href: 'https://sublime.security/blog/prompt-injection-attacks-dont-look-like-what-youre-seeing-in-social-media-and-headlines/' },
-  { title: '“Using AI signals within malicious email”', where: 'Sublime Security ↗', href: 'https://sublime.security/blog/using-ai-signals-within-malicious-email-for-attack-detection-and-threat-hunting/' },
-  { title: '“You’ve been invited to join a Meta for Business scam!”', where: 'Sublime Security ↗', href: 'https://sublime.security/blog/youve-been-invited-to-join-a-meta-for-business-scam/' },
+  ...manualPosts.map((post) => ({ title: post.title, where: `${post.source} · ${post.date} ↗`, href: post.external ?? null })),
   { title: 'Content-Sync Deployment Automation', where: '−70% manual deploy time · Bash + Python', href: null },
   { title: 'ML SPL Generator — M.Sc capstone', where: 'Turns threat-writeup IOCs into Splunk SPL', href: null },
 ];
